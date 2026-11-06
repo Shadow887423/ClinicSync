@@ -53,9 +53,9 @@ class PatientController extends Controller
             ->limit(5)
             ->get();
 
-        // Recent SMS notifications
+        // Recent SMS notifications (scoped strictly to authenticated patient)
         $recentNotifications = SmsNotification::where('user_id', $patient->id)
-            ->orWhere('recipient_phone', $patient->phone)
+            ->where('recipient_phone', $patient->phone)
             ->latest()
             ->limit(5)
             ->get();
@@ -190,6 +190,10 @@ class PatientController extends Controller
 
     public function storeReschedule(Request $request, Appointment $appointment)
     {
+        if ($appointment->patient_id !== Auth::id()) {
+            abort(403, 'Unauthorized access: You cannot reschedule an appointment that does not belong to you.');
+        }
+
         $validated = $request->validate([
             'reason' => ['required', 'string', 'max:1000'],
             'preferred_date' => ['nullable', 'date', 'after_or_equal:today'],
@@ -204,6 +208,10 @@ class PatientController extends Controller
 
     public function cancelAppointment(Request $request, Appointment $appointment)
     {
+        if ($appointment->patient_id !== Auth::id()) {
+            abort(403, 'Unauthorized access: You cannot cancel an appointment that does not belong to you.');
+        }
+
         $request->validate([
             'cancellation_reason' => ['required', 'string', 'max:1000'],
         ]);
@@ -218,7 +226,7 @@ class PatientController extends Controller
     {
         $patient = Auth::user();
         $notifications = SmsNotification::where('user_id', $patient->id)
-            ->orWhere('recipient_phone', $patient->phone)
+            ->where('recipient_phone', $patient->phone)
             ->latest()
             ->paginate(15);
 

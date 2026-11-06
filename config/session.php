@@ -33,7 +33,7 @@ return [
 
     'lifetime' => env('SESSION_LIFETIME', 120),
 
-    'expire_on_close' => false,
+    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -41,12 +41,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | This option allows you to easily specify that all of your session data
-    | should be encrypted before it is stored. All encryption will be run
-    | automatically by Laravel and you can use the Session like normal.
+    | should be encrypted before it is stored. Encrypting sessions protects
+    | sensitive healthcare patient data and appointment credentials.
     |
     */
 
-    'encrypt' => false,
+    'encrypt' => env('SESSION_ENCRYPT', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -168,7 +168,7 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', true),
 
     /*
     |--------------------------------------------------------------------------

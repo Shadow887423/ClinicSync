@@ -14,6 +14,22 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
+    # ----------------------------------------------------------------------
+    # Cyber Security Headers & Exploit Mitigation
+    # ----------------------------------------------------------------------
+    <IfModule mod_headers.c>
+        Header always set X-Frame-Options "SAMEORIGIN"
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set X-XSS-Protection "1; mode=block"
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+        Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+        Header unset X-Powered-By
+    </IfModule>
+
+    # Block access to hidden files, dotfiles, and sensitive configuration files
+    RewriteRule ^\.(?!well-known).* - [F,L]
+    RewriteRule ^(composer\.(json|lock)|package\.json|phpunit\.xml|\.env.*) - [F,L]
+
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f

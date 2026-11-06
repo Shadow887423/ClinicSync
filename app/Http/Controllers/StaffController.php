@@ -278,14 +278,15 @@ class StaffController extends Controller
             'password' => ['required', 'string', 'min:8'],
         ]);
 
-        $user = User::create([
+        $user = new User([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
-            'role' => User::ROLE_DENTIST,
-            'status' => 'active',
             'password' => Hash::make($validated['password']),
         ]);
+        $user->role = User::ROLE_DENTIST;
+        $user->status = 'active';
+        $user->save();
 
         $dentist = Dentist::create([
             'user_id' => $user->id,
@@ -401,9 +402,9 @@ class StaffController extends Controller
 
     public function settings()
     {
-        $gateway = env('SMS_GATEWAY_PROVIDER', 'simulated');
-        $isSimulation = filter_var(env('SMS_SIMULATION_ENABLED', true), FILTER_VALIDATE_BOOLEAN);
-        $reminderHours = env('SMS_REMINDER_HOURS_BEFORE', 24);
+        $gateway = config('sms.provider', 'simulated');
+        $isSimulation = config('sms.simulation_enabled', true);
+        $reminderHours = config('sms.reminder_hours_before', 24);
 
         $stats = [
             'total_sent' => SmsNotification::whereIn('status', ['sent', 'delivered', 'simulated'])->count(),

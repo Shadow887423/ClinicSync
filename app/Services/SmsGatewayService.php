@@ -17,8 +17,8 @@ class SmsGatewayService
 
     public function __construct()
     {
-        $this->provider = env('SMS_GATEWAY_PROVIDER', 'simulated');
-        $this->isSimulation = filter_var(env('SMS_SIMULATION_ENABLED', true), FILTER_VALIDATE_BOOLEAN);
+        $this->provider = config('sms.provider', 'simulated');
+        $this->isSimulation = config('sms.simulation_enabled', true);
     }
 
     /**
@@ -105,9 +105,9 @@ class SmsGatewayService
      */
     protected function sendViaTwilio(SmsNotification $notification): SmsNotification
     {
-        $sid = env('SMS_TWILIO_SID');
-        $token = env('SMS_TWILIO_AUTH_TOKEN');
-        $from = env('SMS_TWILIO_FROM');
+        $sid = config('sms.twilio.sid');
+        $token = config('sms.twilio.token');
+        $from = config('sms.twilio.from');
 
         if (empty($sid) || empty($token) || empty($from)) {
             $notification->update([
@@ -161,8 +161,8 @@ class SmsGatewayService
      */
     protected function sendViaSemaphore(SmsNotification $notification): SmsNotification
     {
-        $apiKey = env('SMS_SEMAPHORE_API_KEY');
-        $senderName = env('SMS_SEMAPHORE_SENDER_NAME', 'CLINICSYNC');
+        $apiKey = config('sms.semaphore.api_key');
+        $senderName = config('sms.semaphore.sender_name', 'CLINICSYNC');
 
         if (empty($apiKey)) {
             $notification->update([
@@ -212,8 +212,8 @@ class SmsGatewayService
      */
     protected function sendViaCustomHttp(SmsNotification $notification): SmsNotification
     {
-        $url = env('SMS_CUSTOM_HTTP_URL');
-        $token = env('SMS_CUSTOM_HTTP_TOKEN');
+        $url = config('sms.custom_http.url');
+        $token = config('sms.custom_http.token');
 
         if (empty($url)) {
             $notification->update([

@@ -73,17 +73,18 @@ class AuthController extends Controller
             'birth_date.before' => 'Birth date must be a past date.',
         ]);
 
-        $user = User::create([
+        $user = new User([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'birth_date' => $validated['birth_date'] ?? null,
             'gender' => $validated['gender'] ?? null,
             'address' => $validated['address'] ?? null,
-            'role' => User::ROLE_PATIENT,
-            'status' => 'active',
             'password' => Hash::make($validated['password']),
         ]);
+        $user->role = User::ROLE_PATIENT;
+        $user->status = 'active';
+        $user->save();
 
         Auth::login($user);
         $request->session()->regenerate();

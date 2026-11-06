@@ -20,11 +20,11 @@ Route::get('/features', [PublicController::class, 'features'])->name('features')
 Route::get('/contact', [PublicController::class, 'contact'])->name('contact');
 
 // Authentication Routes
-Route::middleware('guest')->group(function () {
+Route::middleware(['guest', 'bruteforce'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 });
 
 Route::middleware('auth')->group(function () {
