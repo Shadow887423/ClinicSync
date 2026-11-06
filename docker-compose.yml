@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clinicsync_app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    environment:
+      APP_NAME: CLINICSYNC
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: http://localhost:8000
+      APP_KEY: base64:/x8w71j9PUoXJ6RWZu3wMoWv9F6HI0mZMG7JvjQ7qQA=
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: clinicsync
+      DB_USERNAME: clinicsync_user
+      DB_PASSWORD: clinicsync_password
+      SMS_GATEWAY_PROVIDER: simulated
+      SMS_SIMULATION_ENABLED: "true"
+      RUN_MIGRATIONS: "true"
+      RUN_SEEDER: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - storage_data:/var/www/html/storage
+
+  db:
+    image: mysql:8.0
+    container_name: clinicsync_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret_password
+      MYSQL_DATABASE: clinicsync
+      MYSQL_USER: clinicsync_user
+      MYSQL_PASSWORD: clinicsync_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "clinicsync_user", "-pclinicsync_password"]
+      timeout: 10s
+      retries: 5
+      interval: 5s
+
+volumes:
+  db_data:
+  storage_data:

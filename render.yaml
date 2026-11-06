@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: clinicsync
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: APP_NAME
+        value: CLINICSYNC
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite
+      - key: DB_FOREIGN_KEYS
+        value: "true"
+      - key: RUN_MIGRATIONS
+        value: "true"
+      - key: RUN_SEEDER
+        value: "true"
+      - key: SMS_GATEWAY_PROVIDER
+        value: simulated
+      - key: SMS_SIMULATION_ENABLED
+        value: "true"
+      - key: LOG_CHANNEL
+        value: stderr

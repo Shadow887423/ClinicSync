@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features & Capabilities — CLINICSYNC</title>
+    
+    <!-- Bootstrap 5.3 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-navy: #0f2744;
+            --primary-navy-dark: #0a1b30;
+            --secondary-teal: #0d9488;
+            --teal-hover: #0f766e;
+            --teal-light: #ccfbf1;
+            --accent-soft-blue: #0284c7;
+            --accent-light: #e0f2fe;
+            --bg-canvas: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar-brand-clinicsync {
+            font-weight: 800;
+            font-size: 1.35rem;
+            letter-spacing: -0.5px;
+            color: var(--primary-navy) !important;
+        }
+
+        .navbar-brand-clinicsync span {
+            color: var(--secondary-teal);
+        }
+
+        .btn-teal {
+            background-color: var(--secondary-teal);
+            color: #ffffff;
+            border: 1px solid var(--secondary-teal);
+            font-weight: 600;
+        }
+
+        .btn-teal:hover {
+            background-color: var(--teal-hover);
+            color: #ffffff;
+        }
+
+        .btn-outline-teal {
+            color: var(--secondary-teal);
+            border: 1.5px solid var(--secondary-teal);
+            font-weight: 600;
+        }
+
+        .btn-outline-teal:hover {
+            background-color: var(--secondary-teal);
+            color: #ffffff;
+        }
+
+        .navbar-public {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--secondary-teal);
+        }
+
+        .card-custom {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card-custom:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+
+        .footer-public {
+            background-color: var(--primary-navy-dark);
+            color: #cbd5e1;
+            margin-top: auto;
+        }
+
+        .footer-public a {
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        .footer-public a:hover {
+            color: #ffffff;
+        }
+
+        .banner-github {
+            background: linear-gradient(90deg, #0f2744 0%, #1e3a8a 100%);
+            color: #e2e8f0;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- GitHub Ribbon -->
+    <div class="banner-github py-2 px-3 text-center d-flex flex-wrap justify-content-center align-items-center gap-2">
+        <span class="badge bg-success bg-opacity-25 text-white border border-success border-opacity-50">GitHub Pages Preview</span>
+        <span>Features & System Capabilities</span>
+        <a href="demo.html" class="btn btn-sm btn-teal py-0 px-2 rounded-pill ms-2">Interactive Demo</a>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-public sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-clinicsync d-flex align-items-center" href="index.html">
+                <div class="bg-primary text-white rounded-3 p-1 me-2 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; background-color: var(--primary-navy) !important;">
+                    <i class="bi bi-shield-plus fs-5 text-info"></i>
+                </div>
+                CLINIC<span>SYNC</span>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="publicNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">About System</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="features.html">Features & Workflow</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact Clinic</a></li>
+                    <li class="nav-item"><a class="nav-link text-teal fw-semibold" href="demo.html"><i class="bi bi-play-circle me-1"></i> Interactive Tour</a></li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="login.html" class="btn btn-outline-teal rounded-pill px-3 py-1"><i class="bi bi-box-arrow-in-right me-1"></i> Sign In</a>
+                    <a href="register.html" class="btn btn-teal rounded-pill px-4 py-1"><i class="bi bi-person-plus me-1"></i> Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <section class="py-5 bg-white border-bottom">
+            <div class="container py-lg-3 text-center mx-auto" style="max-width: 800px;">
+                <span class="badge bg-teal bg-opacity-10 text-teal px-3 py-1 rounded-pill mb-2 fw-semibold" style="color: var(--secondary-teal); background-color: var(--teal-light);">Capabilities</span>
+                <h1 class="fw-extrabold text-dark mb-3">System Features & Modules</h1>
+                <p class="lead text-muted">
+                    Explore how CLINICSYNC unites patients, receptionists, and dentists on an automated scheduling platform.
+                </p>
+            </div>
+        </section>
+
+        <section class="py-5">
+            <div class="container">
+                <!-- Feature 1: Patient Self-Service -->
+                <div class="row align-items-center g-5 mb-5 pb-4 border-bottom">
+                    <div class="col-lg-6">
+                        <span class="badge bg-primary bg-opacity-10 text-primary mb-2 fw-bold">Patient Experience</span>
+                        <h3 class="fw-bold text-dark mb-3">Online Booking & Patient Portal</h3>
+                        <p class="text-muted">
+                            Patients can register an account, manage their verified mobile number, and submit appointment requests with their preferred dentist, date, and time slot.
+                        </p>
+                        <ul class="list-unstyled d-flex flex-column gap-2 text-dark small">
+                            <li><i class="bi bi-check2-circle text-teal me-2 fs-6" style="color: var(--secondary-teal);"></i> 24/7 web booking without phone hold times</li>
+                            <li><i class="bi bi-check2-circle text-teal me-2 fs-6" style="color: var(--secondary-teal);"></i> Live status tracking: Pending, Confirmed, Completed, Cancelled</li>
+                            <li><i class="bi bi-check2-circle text-teal me-2 fs-6" style="color: var(--secondary-teal);"></i> Reschedule and cancellation requests with audit logging</li>
+                            <li><i class="bi bi-check2-circle text-teal me-2 fs-6" style="color: var(--secondary-teal);"></i> View full history of SMS notifications received</li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card card-custom p-4 bg-light shadow-sm">
+                            <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-calendar-event me-2 text-primary"></i> Live Slot Availability Engine</h6>
+                            <p class="small text-muted mb-3">Dynamically queries the doctor's weekly shift and booked slots to present only available slots.</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-success p-2"><i class="bi bi-check-lg me-1"></i> 09:00 AM (Available)</span>
+                                <span class="badge bg-success p-2"><i class="bi bi-check-lg me-1"></i> 09:30 AM (Available)</span>
+                                <span class="badge bg-secondary p-2"><i class="bi bi-slash-circle me-1"></i> 10:00 AM (Booked)</span>
+                                <span class="badge bg-success p-2"><i class="bi bi-check-lg me-1"></i> 10:30 AM (Available)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2: Centralized Management Dashboard -->
+                <div class="row align-items-center g-5 mb-5 pb-4 border-bottom flex-lg-row-reverse">
+                    <div class="col-lg-6">
+                        <span class="badge bg-info bg-opacity-10 text-dark mb-2 fw-bold">Clinic Administration</span>
+                        <h3 class="fw-bold text-dark mb-3">Staff Triage & Schedule Management</h3>
+                        <p class="text-muted">
+                            Receptionists maintain total visibility over the clinic calendar, resolving appointment requests, managing dentist availability, and reviewing delivery logs.
+                        </p>
+                        <ul class="list-unstyled d-flex flex-column gap-2 text-dark small">
+                            <li><i class="bi bi-check2-circle text-primary me-2 fs-6"></i> Single-click Confirm or Reject with custom feedback</li>
+                            <li><i class="bi bi-check2-circle text-primary me-2 fs-6"></i> Concurrency protection preventing doctor double-booking</li>
+                            <li><i class="bi bi-check2-circle text-primary me-2 fs-6"></i> Daily and weekly clinic calendar agenda</li>
+                            <li><i class="bi bi-check2-circle text-primary me-2 fs-6"></i> Patient directory and communication logs</li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card card-custom p-4 bg-light shadow-sm">
+                            <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-lock me-2 text-primary"></i> Concurrency Lock Protection</h6>
+                            <p class="small text-muted mb-0">Database transaction isolation verifies slot uniqueness at write-time, preventing race conditions when multiple patients request identical slots.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 3: Automated SMS Notification Gateway -->
+                <div class="row align-items-center g-5 mb-5 pb-4 border-bottom">
+                    <div class="col-lg-6">
+                        <span class="badge bg-success bg-opacity-10 text-success mb-2 fw-bold">Messaging Infrastructure</span>
+                        <h3 class="fw-bold text-dark mb-3">Automated SMS Confirmation & Reminders</h3>
+                        <p class="text-muted">
+                            Never lose a patient to a forgotten appointment. CLINICSYNC dispatches automated SMS alerts immediately upon confirmation and triggers 24-hour reminder broadcasts.
+                        </p>
+                        <ul class="list-unstyled d-flex flex-column gap-2 text-dark small">
+                            <li><i class="bi bi-broadcast text-success me-2 fs-6"></i> Instant confirmation SMS upon staff approval</li>
+                            <li><i class="bi bi-broadcast text-success me-2 fs-6"></i> Scheduled 24-hour appointment reminder cron job</li>
+                            <li><i class="bi bi-broadcast text-success me-2 fs-6"></i> Pluggable gateway drivers (Simulated, Twilio, Semaphore)</li>
+                            <li><i class="bi bi-broadcast text-success me-2 fs-6"></i> Delivery status tracking with automatic retry dispatch</li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="p-4 rounded-4 shadow-sm border bg-dark text-white">
+                            <div class="d-flex justify-content-between align-items-center mb-2 small text-light-50">
+                                <span><i class="bi bi-terminal me-1"></i> SMS Gateway Driver</span>
+                                <span class="badge bg-success text-white">Active</span>
+                            </div>
+                            <pre class="mb-0 text-info small" style="white-space: pre-wrap; font-family: monospace;">
+[SMS DISPATCHED]
+To: +1 (555) 345-6789
+Provider: simulated
+Message: "Hello John, your dental appointment is confirmed for Nov 7, 2026 at 10:00 AM. Assigned Doctor: Dr. Aris Thorne. — CLINICSYNC"
+Status: DELIVERED (200 OK)</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 4: Dentist Portal -->
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-6">
+                        <span class="badge bg-warning bg-opacity-10 text-dark mb-2 fw-bold">Practitioner Portal</span>
+                        <h3 class="fw-bold text-dark mb-3">Dedicated Dentist Schedule View</h3>
+                        <p class="text-muted">
+                            Dentists access a streamlined, distraction-free agenda showing their daily appointments, patient contact information, and appointment completion tools.
+                        </p>
+                        <ul class="list-unstyled d-flex flex-column gap-2 text-dark small">
+                            <li><i class="bi bi-stethoscope text-warning me-2 fs-6"></i> Personalized day/week agenda</li>
+                            <li><i class="bi bi-stethoscope text-warning me-2 fs-6"></i> Mark appointments as "Completed" upon treatment</li>
+                            <li><i class="bi bi-stethoscope text-warning me-2 fs-6"></i> Clinical notes and consultation remarks</li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6 text-center">
+                        <div class="card card-custom p-4 text-center">
+                            <i class="bi bi-clipboard2-pulse fs-1 text-teal mb-3" style="color: var(--secondary-teal);"></i>
+                            <h5 class="fw-bold">Ready to see it in action?</h5>
+                            <p class="small text-muted mb-3">Take the interactive tour of all roles without needing to create an account.</p>
+                            <a href="demo.html" class="btn btn-teal rounded-pill px-4">Open Interactive Tour</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-public py-5 mt-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-5 col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary text-white rounded-3 p-1 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: var(--secondary-teal) !important;">
+                            <i class="bi bi-shield-plus text-white"></i>
+                        </div>
+                        <h5 class="text-white mb-0 fw-bold">CLINICSYNC</h5>
+                    </div>
+                    <p class="text-light-50 small pe-lg-4">
+                        Cloud-based dental appointment scheduling platform with automated SMS notifications.
+                    </p>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white fw-bold mb-3">Quick Navigation</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About CLINICSYNC</a></li>
+                        <li><a href="features.html">Workflow Features</a></li>
+                        <li><a href="demo.html">Interactive Tour</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <h6 class="text-white fw-bold mb-3">Clinic Office</h6>
+                    <p class="small text-light-50 mb-1"><i class="bi bi-geo-alt me-2 text-info"></i> Suite 400, Healthcare Tower, Medical Plaza Way</p>
+                    <p class="small text-light-50 mb-0"><i class="bi bi-telephone me-2 text-info"></i> +1 (555) 123-CLINIC</p>
+                </div>
+            </div>
+            <hr class="my-4 border-secondary opacity-25">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-light-50">
+                <div>&copy; 2026 CLINICSYNC Dental System. Academic Capstone & Research Project.</div>
+                <div><span class="badge bg-dark border border-secondary text-info">GitHub Pages Ready</span></div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
