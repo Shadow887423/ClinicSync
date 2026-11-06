@@ -275,7 +275,7 @@ class StaffController extends Controller
             'license_number' => ['nullable', 'string', 'max:100'],
             'slot_duration_minutes' => ['required', 'integer', 'in:15,30,45,60'],
             'bio' => ['nullable', 'string'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', \Illuminate\Validation\Rules\Password::min(8)->letters()->numbers()],
         ]);
 
         $user = new User([

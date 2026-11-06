@@ -30,7 +30,7 @@ Route::middleware(['guest', 'bruteforce'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/settings', [AuthController::class, 'showSettings'])->name('settings');
-    Route::post('/settings', [AuthController::class, 'updateSettings'])->name('settings.update');
+    Route::post('/settings', [AuthController::class, 'updateSettings'])->middleware('throttle:5,1')->name('settings.update');
 
     // Patient Routes
     Route::prefix('patient')->name('patient.')->middleware('role:patient')->group(function () {
@@ -39,14 +39,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/profile', [PatientController::class, 'updateProfile'])->name('profile.update');
         
         Route::get('/request-appointment', [PatientController::class, 'requestForm'])->name('appointments.request');
-        Route::post('/request-appointment', [PatientController::class, 'storeAppointment'])->name('appointments.store');
+        Route::post('/request-appointment', [PatientController::class, 'storeAppointment'])->middleware('throttle:10,1')->name('appointments.store');
         Route::get('/available-slots', [PatientController::class, 'getAvailableSlots'])->name('appointments.slots');
         
         Route::get('/appointments', [PatientController::class, 'myAppointments'])->name('appointments.index');
         Route::get('/appointments/{appointment}', [PatientController::class, 'showAppointment'])->name('appointments.show');
         Route::get('/appointments/{appointment}/reschedule', [PatientController::class, 'rescheduleForm'])->name('appointments.reschedule');
-        Route::post('/appointments/{appointment}/reschedule', [PatientController::class, 'storeReschedule'])->name('appointments.reschedule.store');
-        Route::post('/appointments/{appointment}/cancel', [PatientController::class, 'cancelAppointment'])->name('appointments.cancel');
+        Route::post('/appointments/{appointment}/reschedule', [PatientController::class, 'storeReschedule'])->middleware('throttle:10,1')->name('appointments.reschedule.store');
+        Route::post('/appointments/{appointment}/cancel', [PatientController::class, 'cancelAppointment'])->middleware('throttle:10,1')->name('appointments.cancel');
         
         Route::get('/notifications', [PatientController::class, 'notifications'])->name('notifications');
     });

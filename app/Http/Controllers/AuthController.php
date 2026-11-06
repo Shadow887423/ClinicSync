@@ -67,7 +67,11 @@ class AuthController extends Controller
             'birth_date' => ['nullable', 'date', 'before:today'],
             'gender' => ['nullable', 'string', 'in:Male,Female,Other'],
             'address' => ['nullable', 'string', 'max:500'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->letters()->numbers()
+            ],
         ], [
             'phone.regex' => 'Please provide a valid mobile number (e.g., +15551234567 or 09171234567).',
             'birth_date.before' => 'Birth date must be a past date.',
@@ -112,7 +116,11 @@ class AuthController extends Controller
 
         $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->letters()->numbers()
+            ],
         ]);
 
         $user->update([
