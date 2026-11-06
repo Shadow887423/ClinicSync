@@ -132,4 +132,53 @@ class SmsNotificationTest extends TestCase
         $this->assertNull($updated->error_message);
         $this->assertNotNull($updated->gateway_reference);
     }
+
+    public function test_textbee_gateway_dispatches_sms()
+    {
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.textbee.dev/api/v1/gateway/send-sms' => \Illuminate\Support\Facades\Http::response([
+                'success' => true,
+                'data' => [
+                    'id' => 'TB-TEST-9988',
+                ],
+            ], 200),
+        ]);
+
+        config([
+            'sms.provider' => 'textbee',
+            'sms.simulation_enabled' => false,
+            'sms.textbee.api_key' => 'test-textbee-api-key',
+        ]);
+
+        $service = app(SmsGatewayService::class);
+        $notification = $service->sendSms('+15559876543', 'Test TextBee message', SmsNotification::TYPE_GENERAL);
+
+        $this->assertEquals(SmsNotification::STATUS_SENT, $notification->status);
+        $this->assertEquals('textbee', $notification->gateway);
+        $this->assertEquals('TB-TEST-9988', $notification->gateway_reference);
+    }
+
+    public function test_textbelt_gateway_dispatches_sms()
+    {
+        \Illuminate\Support\Facades\Http::fake([
+            'https://textbelt.com/text' => \Illuminate\Support\Facades\Http::response([
+                'success' => true,
+                'textId' => '12345678',
+                'quotaRemaining' => 0,
+            ], 200),
+        ]);
+
+        config([
+            'sms.provider' => 'textbelt',
+            'sms.simulation_enabled' => false,
+            'sms.textbelt.key' => 'textbelt',
+        ]);
+
+        $service = app(SmsGatewayService::class);
+        $notification = $service->sendSms('+15559876543', 'Test Textbelt message', SmsNotification::TYPE_GENERAL);
+
+        $this->assertEquals(SmsNotification::STATUS_SENT, $notification->status);
+        $this->assertEquals('textbelt', $notification->gateway);
+        $this->assertEquals('12345678', $notification->gateway_reference);
+    }
 }

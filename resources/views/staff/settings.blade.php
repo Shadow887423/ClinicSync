@@ -166,8 +166,25 @@
 
                 <div class="accordion-item border rounded-3 mb-2">
                     <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 small fw-bold text-success" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTextbee">
+                            <i class="bi bi-star-fill text-warning me-1"></i> 2. TextBee Free Gateway (300 Free SMS/mo to Real Numbers)
+                        </button>
+                    </h2>
+                    <div id="collapseTextbee" class="accordion-collapse collapse">
+                        <div class="accordion-body small bg-light text-muted font-monospace">
+                            SMS_GATEWAY_PROVIDER=textbee<br>
+                            SMS_SIMULATION_ENABLED=false<br>
+                            SMS_TEXTBEE_API_KEY=your_api_key<br>
+                            SMS_TEXTBEE_DEVICE_ID=optional_device_id<br>
+                            <span class="text-secondary"># Register free at https://textbee.dev</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border rounded-3 mb-2">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed py-2 small fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwilio">
-                            2. Twilio SMS Gateway (Global)
+                            3. Twilio SMS Gateway (Includes ~$15 Free Trial Credit)
                         </button>
                     </h2>
                     <div id="collapseTwilio" class="accordion-collapse collapse">
@@ -176,7 +193,8 @@
                             SMS_SIMULATION_ENABLED=false<br>
                             SMS_TWILIO_SID=ACXXXXXXXXXXXXXXXX<br>
                             SMS_TWILIO_AUTH_TOKEN=your_auth_token<br>
-                            SMS_TWILIO_FROM=+1234567890
+                            SMS_TWILIO_FROM=+1234567890<br>
+                            <span class="text-secondary"># Twilio trial sends directly to your verified personal number</span>
                         </div>
                     </div>
                 </div>
@@ -184,7 +202,7 @@
                 <div class="accordion-item border rounded-3 mb-2">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed py-2 small fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSemaphore">
-                            3. Semaphore SMS Gateway (PH / Southeast Asia)
+                            4. Semaphore SMS Gateway (PH / Southeast Asia)
                         </button>
                     </h2>
                     <div id="collapseSemaphore" class="accordion-collapse collapse">
@@ -199,8 +217,23 @@
 
                 <div class="accordion-item border rounded-3 mb-2">
                     <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 small fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTextbelt">
+                            5. Textbelt SMS API (1 Free SMS/Day)
+                        </button>
+                    </h2>
+                    <div id="collapseTextbelt" class="accordion-collapse collapse">
+                        <div class="accordion-body small bg-light text-muted font-monospace">
+                            SMS_GATEWAY_PROVIDER=textbelt<br>
+                            SMS_SIMULATION_ENABLED=false<br>
+                            SMS_TEXTBELT_KEY=textbelt
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border rounded-3 mb-2">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed py-2 small fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCustom">
-                            4. Generic Webhook / Custom HTTP SMS Gateway
+                            6. Generic Webhook / Custom HTTP SMS Gateway
                         </button>
                     </h2>
                     <div id="collapseCustom" class="accordion-collapse collapse">

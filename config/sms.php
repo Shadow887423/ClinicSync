@@ -30,6 +30,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | TextBee Free Outbound SMS Gateway (https://textbee.dev)
+    | Offers 300 free SMS/month to real phone numbers worldwide
+    |--------------------------------------------------------------------------
+    */
+    'textbee' => [
+        'api_key' => env('SMS_TEXTBEE_API_KEY'),
+        'device_id' => env('SMS_TEXTBEE_DEVICE_ID'),
+        'base_url' => env('SMS_TEXTBEE_URL', 'https://api.textbee.dev/api/v1'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Textbelt SMS Gateway (https://textbelt.com)
+    | 1 free SMS/day using key 'textbelt' or paid key
+    |--------------------------------------------------------------------------
+    */
+    'textbelt' => [
+        'key' => env('SMS_TEXTBELT_KEY', 'textbelt'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Shelex Free OTP & Inbound SMS Verification API
     | https://otp-api.shelex.dev/api/
     |--------------------------------------------------------------------------

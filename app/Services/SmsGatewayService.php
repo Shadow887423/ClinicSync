@@ -62,6 +62,8 @@ class SmsGatewayService
         return match ($this->provider) {
             'twilio' => $this->sendViaTwilio($notification),
             'semaphore' => $this->sendViaSemaphore($notification),
+            'textbee' => $this->sendViaTextbee($notification),
+            'textbelt' => $this->sendViaTextbelt($notification),
             'custom_http' => $this->sendViaCustomHttp($notification),
             default => $this->sendViaSimulated($notification),
         };
@@ -261,6 +263,110 @@ class SmsGatewayService
     }
 
     /**
+     * Real Gateway: TextBee Free SMS Gateway (https://textbee.dev)
+     * Free plan provides 300 free SMS/month to real phone numbers worldwide
+     */
+    protected function sendViaTextbee(SmsNotification $notification): SmsNotification
+    {
+        $apiKey = config('sms.textbee.api_key');
+        $deviceId = config('sms.textbee.device_id');
+        $baseUrl = rtrim(config('sms.textbee.base_url', 'https://api.textbee.dev/api/v1'), '/');
+
+        if (empty($apiKey)) {
+            $notification->update([
+                'status' => SmsNotification::STATUS_FAILED,
+                'error_message' => 'TextBee API key missing. Configure SMS_TEXTBEE_API_KEY in .env or settings.',
+            ]);
+            return $notification;
+        }
+
+        try {
+            $payload = [
+                'recipients' => [$notification->recipient_phone],
+                'message' => $notification->message,
+            ];
+
+            if (!empty($deviceId)) {
+                $payload['deviceId'] = $deviceId;
+            }
+
+            $response = Http::withHeaders([
+                'x-api-key' => $apiKey,
+                'Content-Type' => 'application/json',
+            ])->timeout(12)->post("{$baseUrl}/gateway/send-sms", $payload);
+
+            if ($response->successful()) {
+                $body = $response->json();
+                $ref = $body['data']['id'] ?? $body['id'] ?? 'TB-' . time();
+                $notification->update([
+                    'status' => SmsNotification::STATUS_SENT,
+                    'gateway' => 'textbee',
+                    'gateway_reference' => (string)$ref,
+                    'sent_at' => now(),
+                    'payload_response' => json_encode($body),
+                    'error_message' => null,
+                ]);
+            } else {
+                $error = $response->json();
+                $errorMessage = is_array($error) ? ($error['message'] ?? $error['error'] ?? $response->body()) : $response->body();
+                $notification->update([
+                    'status' => SmsNotification::STATUS_FAILED,
+                    'error_message' => 'TextBee API Error (' . $response->status() . '): ' . $errorMessage,
+                ]);
+            }
+        } catch (Exception $e) {
+            $notification->update([
+                'status' => SmsNotification::STATUS_FAILED,
+                'error_message' => 'TextBee transport failure: ' . $this->sanitizeErrorMessage($e->getMessage()),
+            ]);
+        }
+
+        return $notification;
+    }
+
+    /**
+     * Real Gateway: Textbelt SMS Gateway (https://textbelt.com)
+     * 1 free SMS/day using key 'textbelt' or paid bundle key
+     */
+    protected function sendViaTextbelt(SmsNotification $notification): SmsNotification
+    {
+        $key = config('sms.textbelt.key', 'textbelt');
+
+        try {
+            $response = Http::asForm()->timeout(12)->post('https://textbelt.com/text', [
+                'number' => $notification->recipient_phone,
+                'message' => $notification->message,
+                'key' => $key,
+            ]);
+
+            $body = $response->json();
+            if ($response->successful() && !empty($body['success'])) {
+                $notification->update([
+                    'status' => SmsNotification::STATUS_SENT,
+                    'gateway' => 'textbelt',
+                    'gateway_reference' => (string)($body['textId'] ?? 'TBELT-' . time()),
+                    'sent_at' => now(),
+                    'payload_response' => json_encode($body),
+                    'error_message' => null,
+                ]);
+            } else {
+                $errMsg = $body['error'] ?? 'Textbelt failed to dispatch message';
+                $notification->update([
+                    'status' => SmsNotification::STATUS_FAILED,
+                    'error_message' => 'Textbelt Error: ' . $errMsg,
+                ]);
+            }
+        } catch (Exception $e) {
+            $notification->update([
+                'status' => SmsNotification::STATUS_FAILED,
+                'error_message' => 'Textbelt transport failure: ' . $this->sanitizeErrorMessage($e->getMessage()),
+            ]);
+        }
+
+        return $notification;
+    }
+
+    /**
      * Send Appointment Confirmation SMS
      */
     public function sendConfirmation(Appointment $appointment): ?SmsNotification
@@ -411,11 +517,13 @@ class SmsGatewayService
      */
     protected function sanitizeErrorMessage(string $error): string
     {
-        $token = env('SMS_TWILIO_AUTH_TOKEN');
-        $apiKey = env('SMS_SEMAPHORE_API_KEY');
-        $customToken = env('SMS_CUSTOM_HTTP_TOKEN');
+        $token = config('sms.twilio.token');
+        $apiKey = config('sms.semaphore.api_key');
+        $customToken = config('sms.custom_http.token');
+        $textbeeKey = config('sms.textbee.api_key');
+        $textbeltKey = config('sms.textbelt.key');
 
-        $replacements = array_filter([$token, $apiKey, $customToken]);
+        $replacements = array_filter([$token, $apiKey, $customToken, $textbeeKey, $textbeltKey]);
         if (!empty($replacements)) {
             return str_replace($replacements, '[REDACTED]', $error);
         }
