@@ -75,6 +75,13 @@ Route::middleware('auth')->group(function () {
         
         Route::get('/settings', [StaffController::class, 'settings'])->name('settings');
         Route::post('/test-sms', [StaffController::class, 'testSms'])->name('test-sms');
+
+        // Shelex Free OTP & Inbound Test SMS Endpoints
+        Route::prefix('otp-service')->name('otp.')->group(function () {
+            Route::get('/countries', [StaffController::class, 'getFreeOtpCountries'])->name('countries');
+            Route::get('/list/{country}', [StaffController::class, 'getFreeOtpNumbers'])->name('numbers');
+            Route::get('/verify/{country}/{phone}', [StaffController::class, 'getFreeOtpVerification'])->name('verify');
+        });
     });
 
     // Dentist Routes

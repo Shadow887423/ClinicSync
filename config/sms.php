@@ -28,4 +28,14 @@ return [
         'token' => env('SMS_CUSTOM_HTTP_TOKEN'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Shelex Free OTP & Inbound SMS Verification API
+    | https://otp-api.shelex.dev/api/
+    |--------------------------------------------------------------------------
+    */
+    'free_otp' => [
+        'base_url' => env('SMS_FREE_OTP_API_URL', 'https://otp-api.shelex.dev/api'),
+    ],
+
 ];

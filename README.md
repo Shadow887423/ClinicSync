@@ -1,7 +1,7 @@
 # CLINICSYNC — Dental Appointment Scheduling & SMS Notification System
 
 [![CI Pipeline](https://github.com/benra/ClinicSync/actions/workflows/ci.yml/badge.svg)](https://github.com/benra/ClinicSync/actions/workflows/ci.yml)
-[![Tests Passing](https://img.shields.io/badge/PHPUnit-24%20passed-brightgreen.svg)](https://github.com/benra/ClinicSync)
+[![Tests Passing](https://img.shields.io/badge/PHPUnit-33%20passed-brightgreen.svg)](https://github.com/benra/ClinicSync)
 [![Laravel](https://img.shields.io/badge/Laravel-9.x-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.0%20%7C%208.1%20%7C%208.2-777BB4?logo=php&logoColor=white)](https://php.net)
 [![GitHub Pages Ready](https://img.shields.io/badge/GitHub%20Pages-Ready%20(%2Fdocs)-blue?logo=github)](https://pages.github.com)
@@ -116,17 +116,17 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your web browser.
 
 ## 🧪 Automated Testing
 
-ClinicSync includes 24 comprehensive unit and feature tests covering authentication, appointment validation, concurrency slot locking, SMS gateway dispatching, and role authorization.
+ClinicSync includes 33 comprehensive unit and feature tests covering authentication, appointment validation, concurrency slot locking, cyber defense middleware, Shelex OTP API integration, SMS gateway dispatching, and role authorization.
 
 To run the test suite:
 ```bash
 php artisan test
 ```
-All 24 tests run in-memory with SQLite and execute in under 8 seconds.
+All 33 tests run in-memory with SQLite and execute in under 5 seconds.
 
 ---
 
-## 📱 SMS Gateway Integration
+## 📱 SMS Gateway & Free Inbound OTP Verification API
 
 ClinicSync provides a modular, pluggable SMS driver configurable in `.env`:
 
@@ -145,7 +145,17 @@ SMS_SIMULATION_ENABLED=true
 # SMS_GATEWAY_PROVIDER=semaphore
 # SMS_SEMAPHORE_API_KEY=your_api_key
 # SMS_SEMAPHORE_SENDER_NAME=CLINICSYNC
+
+# Shelex Free OTP & Inbound Test SMS Verification Service
+# https://otp-api.shelex.dev/api/
+SMS_FREE_OTP_API_URL=https://otp-api.shelex.dev/api
 ```
+
+### Shelex Free OTP Testing API:
+Staff can test inbound OTP/SMS verification without buying real virtual phone numbers:
+1. **Available Countries:** `GET /staff/otp-service/countries` (`https://otp-api.shelex.dev/api/countries`)
+2. **Numbers per Country:** `GET /staff/otp-service/list/{country}` (`https://otp-api.shelex.dev/api/list/{{country}}`)
+3. **Verify Received Code:** `GET /staff/otp-service/verify/{country}/{phone}?match=CLINICSYNC&ago=300` (`https://otp-api.shelex.dev/api/{{country}}/{{phone}}?match={{substring}}&ago={{ago}}`)
 
 Automated reminders scheduled 24 hours prior to appointments can be dispatched using:
 ```bash

@@ -8,6 +8,7 @@ use App\Models\DentistAvailability;
 use App\Models\SmsNotification;
 use App\Models\User;
 use App\Services\AppointmentService;
+use App\Services\FreeOtpApiService;
 use App\Services\SmsGatewayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,11 +20,16 @@ class StaffController extends Controller
 {
     protected AppointmentService $appointmentService;
     protected SmsGatewayService $smsService;
+    protected FreeOtpApiService $freeOtpService;
 
-    public function __construct(AppointmentService $appointmentService, SmsGatewayService $smsService)
-    {
+    public function __construct(
+        AppointmentService $appointmentService,
+        SmsGatewayService $smsService,
+        FreeOtpApiService $freeOtpService
+    ) {
         $this->appointmentService = $appointmentService;
         $this->smsService = $smsService;
+        $this->freeOtpService = $freeOtpService;
     }
 
     public function dashboard()
@@ -435,5 +441,46 @@ class StaffController extends Controller
         }
 
         return back()->with('success', "Test SMS successfully dispatched! Status: {$notification->status} (Ref: {$notification->gateway_reference})");
+    }
+
+    /**
+     * Get available countries from Shelex Free OTP service
+     */
+    public function getFreeOtpCountries()
+    {
+        $countries = $this->freeOtpService->getCountries();
+        return response()->json([
+            'status' => 'success',
+            'countries' => $countries,
+        ]);
+    }
+
+    /**
+     * Get available phone numbers for a country from Shelex Free OTP service
+     */
+    public function getFreeOtpNumbers(string $country)
+    {
+        $numbers = $this->freeOtpService->getPhoneNumbers($country);
+        return response()->json([
+            'status' => 'success',
+            'country' => $country,
+            'numbers' => $numbers,
+        ]);
+    }
+
+    /**
+     * Fetch incoming SMS/OTP verification code from Shelex Free OTP service
+     */
+    public function getFreeOtpVerification(Request $request, string $country, string $phone)
+    {
+        $match = $request->query('match', 'CLINICSYNC');
+        $ago = $request->query('ago') ? (int)$request->query('ago') : null;
+
+        $result = $this->freeOtpService->getOtpCode($country, $phone, $match, $ago);
+
+        return response()->json([
+            'status' => $result !== null ? 'success' : 'pending',
+            'data' => $result,
+        ]);
     }
 }

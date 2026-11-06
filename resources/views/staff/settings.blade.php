@@ -86,6 +86,56 @@
                 </button>
             </form>
         </div>
+
+        <!-- Shelex Free OTP Live Inspector Card -->
+        <div class="card card-custom p-4 mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-shield-check text-success me-2"></i> Free OTP & Inbound SMS Live Tool
+                </h5>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Shelex API</span>
+            </div>
+            <p class="text-muted small mb-3">
+                Fetch available public test phone numbers from <a href="https://otp-api.shelex.dev/api/" target="_blank" class="text-teal">otp-api.shelex.dev</a> to test incoming OTPs & SMS without commercial carrier fees.
+            </p>
+
+            <div class="row g-2 mb-3">
+                <div class="col-sm-6">
+                    <label class="form-label small fw-bold">1. Available Countries</label>
+                    <div class="input-group input-group-sm">
+                        <select id="otpCountrySelect" class="form-select">
+                            <option value="">-- Click Load Countries --</option>
+                        </select>
+                        <button type="button" class="btn btn-outline-teal" id="btnLoadCountries" onclick="loadOtpCountries()">
+                            <i class="bi bi-arrow-clockwise"></i> Load
+                        </button>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label small fw-bold">2. Phone Numbers</label>
+                    <select id="otpNumberSelect" class="form-select form-select-sm" disabled onchange="onOtpNumberSelected()">
+                        <option value="">-- Select country first --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="btnCopyOtpPhone" disabled onclick="copyOtpNumber()">
+                    <i class="bi bi-clipboard me-1"></i> Use for Test SMS
+                </button>
+                <button type="button" class="btn btn-sm btn-teal rounded-pill" id="btnCheckOtpCode" disabled onclick="checkOtpCode()">
+                    <i class="bi bi-search me-1"></i> Check Incoming OTP / SMS
+                </button>
+            </div>
+
+            <div id="otpResultBox" class="p-3 bg-light rounded-3 border d-none small font-monospace">
+                <div class="fw-bold text-dark mb-1 d-flex justify-content-between">
+                    <span><i class="bi bi-chat-text text-teal me-1"></i> Received Message:</span>
+                    <span id="otpStatusBadge" class="badge bg-info"></span>
+                </div>
+                <div id="otpResultContent" class="text-muted">Waiting for query...</div>
+            </div>
+        </div>
     </div>
 
     <!-- Right Column: Setup & Environment Instructions -->
@@ -162,6 +212,30 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="accordion-item border rounded-3 mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 small fw-bold text-teal" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOtpApi">
+                            <i class="bi bi-shield-check me-1"></i> 5. Shelex Free OTP & Inbound Test SMS API
+                        </button>
+                    </h2>
+                    <div id="collapseOtpApi" class="accordion-collapse collapse">
+                        <div class="accordion-body small bg-light text-muted">
+                            <p class="mb-2">Aggregates public phone numbers to receive and read incoming OTPs/SMS for testing without SMS carrier costs:</p>
+                            <div class="font-monospace p-2 bg-white rounded border mb-2">
+                                <strong>1. Available Countries:</strong><br>
+                                <span class="text-primary">GET</span> /staff/otp-service/countries<br>
+                                <em>Proxy for:</em> https://otp-api.shelex.dev/api/countries<br><br>
+                                <strong>2. Numbers per Country:</strong><br>
+                                <span class="text-primary">GET</span> /staff/otp-service/list/{country}<br>
+                                <em>Proxy for:</em> https://otp-api.shelex.dev/api/list/&#123;&#123;country&#125;&#125;<br><br>
+                                <strong>3. Read Received OTP / Message:</strong><br>
+                                <span class="text-primary">GET</span> /staff/otp-service/verify/{country}/{phone}?match=CLINICSYNC&ago=300<br>
+                                <em>Proxy for:</em> https://otp-api.shelex.dev/api/&#123;&#123;country&#125;&#125;/&#123;&#123;phone&#125;&#125;?match=&#123;&#123;substring&#125;&#125;&ago=&#123;&#123;ago&#125;&#125;
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="border-top pt-3 mt-4">
@@ -181,4 +255,138 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    async function loadOtpCountries() {
+        const btn = document.getElementById('btnLoadCountries');
+        const select = document.getElementById('otpCountrySelect');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        try {
+            const res = await fetch('{{ route("staff.otp.countries") }}');
+            const data = await res.json();
+            if (data.status === 'success' && Array.isArray(data.countries)) {
+                select.innerHTML = '<option value="">-- Choose Country --</option>';
+                data.countries.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = typeof c === 'string' ? c : (c.name || c.country || JSON.stringify(c));
+                    opt.textContent = (typeof c === 'string' ? c : (c.name || c.country)).toUpperCase();
+                    select.appendChild(opt);
+                });
+                select.onchange = onOtpCountrySelected;
+            } else {
+                alert('Could not load countries. Ensure the external API is reachable.');
+            }
+        } catch (err) {
+            alert('Error contacting OTP service endpoint: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Load';
+        }
+    }
+
+    async function onOtpCountrySelected() {
+        const country = document.getElementById('otpCountrySelect').value;
+        const numberSelect = document.getElementById('otpNumberSelect');
+        const btnCopy = document.getElementById('btnCopyOtpPhone');
+        const btnCheck = document.getElementById('btnCheckOtpCode');
+
+        if (!country) {
+            numberSelect.disabled = true;
+            numberSelect.innerHTML = '<option value="">-- Select country first --</option>';
+            btnCopy.disabled = true;
+            btnCheck.disabled = true;
+            return;
+        }
+
+        numberSelect.disabled = true;
+        numberSelect.innerHTML = '<option value="">Loading phone numbers...</option>';
+
+        try {
+            const res = await fetch(`{{ url('/staff/otp-service/list') }}/${encodeURIComponent(country)}`);
+            const data = await res.json();
+            numberSelect.innerHTML = '<option value="">-- Select a phone number --</option>';
+
+            if (data.status === 'success' && Array.isArray(data.numbers) && data.numbers.length > 0) {
+                data.numbers.forEach(item => {
+                    const opt = document.createElement('option');
+                    const phone = typeof item === 'string' ? item : (item.phone || item.number || JSON.stringify(item));
+                    opt.value = phone;
+                    opt.textContent = phone;
+                    numberSelect.appendChild(opt);
+                });
+                numberSelect.disabled = false;
+            } else {
+                numberSelect.innerHTML = '<option value="">No numbers currently available for this country</option>';
+            }
+        } catch (err) {
+            numberSelect.innerHTML = '<option value="">Error loading numbers</option>';
+        }
+    }
+
+    function onOtpNumberSelected() {
+        const phone = document.getElementById('otpNumberSelect').value;
+        const btnCopy = document.getElementById('btnCopyOtpPhone');
+        const btnCheck = document.getElementById('btnCheckOtpCode');
+        const hasPhone = Boolean(phone);
+        btnCopy.disabled = !hasPhone;
+        btnCheck.disabled = !hasPhone;
+    }
+
+    function copyOtpNumber() {
+        const phone = document.getElementById('otpNumberSelect').value;
+        if (!phone) return;
+        const input = document.querySelector('input[name="phone"]');
+        if (input) {
+            input.value = phone;
+            input.scrollIntoView({ behavior: 'smooth' });
+            input.classList.add('is-valid');
+            setTimeout(() => input.classList.remove('is-valid'), 2000);
+        }
+    }
+
+    async function checkOtpCode() {
+        const country = document.getElementById('otpCountrySelect').value;
+        const phone = document.getElementById('otpNumberSelect').value;
+        const btnCheck = document.getElementById('btnCheckOtpCode');
+        const resultBox = document.getElementById('otpResultBox');
+        const badge = document.getElementById('otpStatusBadge');
+        const content = document.getElementById('otpResultContent');
+
+        if (!country || !phone) return;
+
+        btnCheck.disabled = true;
+        btnCheck.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Checking...';
+        resultBox.classList.remove('d-none');
+        badge.className = 'badge bg-warning text-dark';
+        badge.textContent = 'Querying...';
+        content.textContent = `Querying Shelex OTP API for ${phone}...`;
+
+        try {
+            const cleanPhone = encodeURIComponent(phone.replace(/[^\d+]/g, ''));
+            const res = await fetch(`{{ url('/staff/otp-service/verify') }}/${encodeURIComponent(country)}/${cleanPhone}?match=CLINICSYNC&ago=600`);
+            const data = await res.json();
+
+            if (data.status === 'success' && data.data) {
+                badge.className = 'badge bg-success';
+                badge.textContent = 'Received';
+                content.innerHTML = `<pre class="mb-0 text-success">${JSON.stringify(data.data, null, 2)}</pre>`;
+            } else {
+                badge.className = 'badge bg-secondary';
+                badge.textContent = 'Pending';
+                content.textContent = 'No message matching "CLINICSYNC" found in the last 10 minutes for this number.';
+            }
+        } catch (err) {
+            badge.className = 'badge bg-danger';
+            badge.textContent = 'Error';
+            content.textContent = 'Failed to fetch messages: ' + err.message;
+        } finally {
+            btnCheck.disabled = false;
+            btnCheck.innerHTML = '<i class="bi bi-search me-1"></i> Check Incoming OTP / SMS';
+        }
+    }
+</script>
 @endsection
