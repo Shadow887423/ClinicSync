@@ -18,12 +18,11 @@ This repository includes a static preview site located in the `/docs` directory 
 
 - **Live URL format**: `https://<your-github-username>.github.io/<your-repository-name>/`
 - **Pages included**:
-  - `index.html`: Public Landing Page with interactive SMS simulation.
+  - `index.html`: Public Landing Page with SMS overview.
   - `about.html`: System Architecture & research problem statement.
   - `features.html`: Deep dive into Patient Booking, Staff Triage, and SMS Gateway.
   - `contact.html`: Clinic operating hours, emergency line, and inquiry form.
-  - `demo.html`: **Interactive Live Tour** simulating Patient booking, Receptionist triage, Doctor agenda, and SMS alerts.
-  - `login.html` & `register.html`: Portals with one-click demo credentials.
+  - `login.html` & `register.html`: Public authentication portals.
 
 ### Enabling GitHub Pages in 30 Seconds:
 1. Push this repository to GitHub.
