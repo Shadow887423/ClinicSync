@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
+        User::unguard();
         $defaultPassword = Hash::make('password123');
 
         // 1. Admin User

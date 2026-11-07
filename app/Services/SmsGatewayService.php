@@ -225,6 +225,51 @@ class SmsGatewayService
             return $notification;
         }
 
+        // SSRF Protection: Validate URL and reject internal, loopback, or cloud metadata endpoints
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            $notification->update([
+                'status' => SmsNotification::STATUS_FAILED,
+                'error_message' => 'Custom SMS Gateway URL is not a valid URL.',
+            ]);
+            return $notification;
+        }
+
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        $host = (string) parse_url($url, PHP_URL_HOST);
+
+        if (!in_array($scheme, ['https', 'http'])) {
+            $notification->update([
+                'status' => SmsNotification::STATUS_FAILED,
+                'error_message' => 'Custom SMS Gateway URL must use HTTP or HTTPS protocol.',
+            ]);
+            return $notification;
+        }
+
+        if (empty($host)) {
+            $notification->update([
+                'status' => SmsNotification::STATUS_FAILED,
+                'error_message' => 'Custom SMS Gateway host cannot be determined.',
+            ]);
+            return $notification;
+        }
+
+        $ip = gethostbyname($host);
+        $isPublicIp = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+        $isProhibitedHost = in_array(strtolower($host), ['localhost', '127.0.0.1', '::1', '169.254.169.254', 'metadata.google.internal'])
+            || str_starts_with($ip, '127.')
+            || str_starts_with($ip, '169.254.')
+            || str_starts_with($ip, '10.')
+            || str_starts_with($ip, '192.168.')
+            || (bool) preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $ip);
+
+        if ($isProhibitedHost || (!$isPublicIp && !app()->environment('testing'))) {
+            $notification->update([
+                'status' => SmsNotification::STATUS_FAILED,
+                'error_message' => "SSRF Protection: Custom SMS Gateway URL cannot point to internal or private address ({$host}).",
+            ]);
+            return $notification;
+        }
+
         try {
             $req = Http::timeout(10);
             if (!empty($token)) {

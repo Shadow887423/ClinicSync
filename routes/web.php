@@ -65,22 +65,29 @@ Route::middleware('auth')->group(function () {
         Route::get('/calendar', [StaffController::class, 'calendar'])->name('calendar');
         Route::get('/patients', [StaffController::class, 'patients'])->name('patients');
         
+        // Dentist Directory (Viewable by Staff and Admin)
         Route::get('/dentists', [StaffController::class, 'dentists'])->name('dentists.index');
-        Route::post('/dentists', [StaffController::class, 'storeDentist'])->name('dentists.store');
-        Route::put('/dentists/{dentist}', [StaffController::class, 'updateDentist'])->name('dentists.update');
-        Route::post('/dentists/{dentist}/availability', [StaffController::class, 'updateAvailability'])->name('dentists.availability');
         
+        // Notifications & Audit Logs
         Route::get('/notifications', [StaffController::class, 'notificationLogs'])->name('notifications.index');
-        Route::post('/notifications/{notification}/retry', [StaffController::class, 'retryNotification'])->name('notifications.retry');
-        
-        Route::get('/settings', [StaffController::class, 'settings'])->name('settings');
-        Route::post('/test-sms', [StaffController::class, 'testSms'])->name('test-sms');
+        Route::post('/notifications/{notification}/retry', [StaffController::class, 'retryNotification'])
+            ->middleware('throttle:10,1')
+            ->name('notifications.retry');
 
         // Shelex Free OTP & Inbound Test SMS Endpoints
         Route::prefix('otp-service')->name('otp.')->group(function () {
             Route::get('/countries', [StaffController::class, 'getFreeOtpCountries'])->name('countries');
             Route::get('/list/{country}', [StaffController::class, 'getFreeOtpNumbers'])->name('numbers');
             Route::get('/verify/{country}/{phone}', [StaffController::class, 'getFreeOtpVerification'])->name('verify');
+        });
+
+        // Administrator-Only Operations (Role: admin)
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/dentists', [StaffController::class, 'storeDentist'])->name('dentists.store');
+            Route::put('/dentists/{dentist}', [StaffController::class, 'updateDentist'])->name('dentists.update');
+            Route::post('/dentists/{dentist}/availability', [StaffController::class, 'updateAvailability'])->name('dentists.availability');
+            Route::get('/settings', [StaffController::class, 'settings'])->name('settings');
+            Route::post('/test-sms', [StaffController::class, 'testSms'])->middleware('throttle:5,1')->name('test-sms');
         });
     });
 

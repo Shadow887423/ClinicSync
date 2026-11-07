@@ -60,6 +60,11 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        // Anti-Bot Honeypot Defense: reject automated bots filling hidden field
+        if (!empty($request->input('hp_field'))) {
+            return back()->withInput();
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
@@ -77,10 +82,14 @@ class AuthController extends Controller
             'birth_date.before' => 'Birth date must be a past date.',
         ]);
 
+        $cleanEmail = strtolower(trim($validated['email']));
+        $cleanPhone = trim($validated['phone']);
+        $cleanName = strip_tags(trim($validated['name']));
+
         $user = new User([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
+            'name' => $cleanName,
+            'email' => $cleanEmail,
+            'phone' => $cleanPhone,
             'birth_date' => $validated['birth_date'] ?? null,
             'gender' => $validated['gender'] ?? null,
             'address' => $validated['address'] ?? null,

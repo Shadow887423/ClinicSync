@@ -9,9 +9,15 @@
         <h5 class="fw-bold text-dark mb-0">Clinic Dentists & Working Hours</h5>
         <div class="text-muted small">Configure specialist profiles, default slot durations, and weekly shifts.</div>
     </div>
+    @if(Auth::user()->isAdmin())
     <button type="button" class="btn btn-teal rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addDentistModal">
         <i class="bi bi-person-plus-fill me-1"></i> Add New Dentist
     </button>
+    @else
+    <span class="badge bg-light text-muted border p-2">
+        <i class="bi bi-shield-lock me-1 text-primary"></i> Administrator Managed
+    </span>
+    @endif
 </div>
 
 <div class="row g-4">
@@ -58,12 +64,16 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-auto border-top pt-3">
+                    @if(Auth::user()->isAdmin())
                     <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#editModal{{ $dentist->id }}">
                         <i class="bi bi-pencil me-1"></i> Edit Profile
                     </button>
                     <button type="button" class="btn btn-sm btn-teal rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#shiftModal{{ $dentist->id }}">
                         <i class="bi bi-calendar2-week me-1"></i> Manage Working Days
                     </button>
+                    @else
+                    <span class="text-muted small py-1"><i class="bi bi-lock me-1"></i> Changes require Clinic Administrator role</span>
+                    @endif
                 </div>
             </div>
         </div>

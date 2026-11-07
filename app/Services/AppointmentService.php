@@ -189,6 +189,12 @@ class AppointmentService
         return DB::transaction(function () use ($appointment, $data, $staffUser) {
             $lockedAppointment = $this->findAndLockAppointment($appointment->id);
 
+            if (!$lockedAppointment->canBeConfirmed()) {
+                throw ValidationException::withMessages([
+                    'appointment' => "Cannot confirm appointment. Invalid transition from current status '{$lockedAppointment->status}'.",
+                ]);
+            }
+
             $dentistId = $data['dentist_id'] ?? $lockedAppointment->dentist_id;
             if (!$dentistId) {
                 throw ValidationException::withMessages([
@@ -424,6 +430,13 @@ class AppointmentService
     {
         return DB::transaction(function () use ($appointment, $actingUser) {
             $locked = $this->findAndLockAppointment($appointment->id);
+
+            if (!$locked->canBeCompleted()) {
+                throw ValidationException::withMessages([
+                    'appointment' => "Only confirmed appointments can be marked as completed. Current status is '{$locked->status}'.",
+                ]);
+            }
+
             $prevStatus = $locked->status;
 
             $locked->update([

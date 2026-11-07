@@ -302,11 +302,13 @@
                         <i class="bi bi-chat-text-fill"></i> SMS Delivery Logs
                     </a>
                 </li>
+                @if(Auth::user()->isAdmin())
                 <li>
                     <a href="{{ route('staff.settings') }}" class="sidebar-link {{ request()->routeIs('staff.settings') ? 'active' : '' }}">
                         <i class="bi bi-broadcast"></i> SMS Gateway Settings
                     </a>
                 </li>
+                @endif
             @endif
 
             {{-- DENTIST MENU --}}

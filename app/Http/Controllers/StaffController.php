@@ -229,9 +229,23 @@ class StaffController extends Controller
 
     public function calendar(Request $request)
     {
-        $month = $request->get('month', now()->format('Y-m'));
-        $startOfMonth = Carbon::parse($month)->startOfMonth();
-        $endOfMonth = Carbon::parse($month)->endOfMonth();
+        $rawMonth = $request->query('month');
+
+        // Defensive check: validate YYYY-MM format to prevent Carbon parse crashes
+        if ($rawMonth && !preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $rawMonth)) {
+            return redirect()->route('staff.calendar')->with('error', 'Invalid month selected. Showing current month schedule.');
+        }
+
+        $month = $rawMonth ?: now()->format('Y-m');
+
+        try {
+            $startOfMonth = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+            $endOfMonth = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
+        } catch (\Throwable $e) {
+            $month = now()->format('Y-m');
+            $startOfMonth = now()->startOfMonth();
+            $endOfMonth = now()->endOfMonth();
+        }
 
         $appointments = Appointment::with(['patient', 'dentist'])
             ->whereBetween(DB::raw('COALESCE(confirmed_date, requested_date)'), [$startOfMonth->format('Y-m-d'), $endOfMonth->format('Y-m-d')])

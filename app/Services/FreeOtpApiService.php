@@ -49,7 +49,13 @@ class FreeOtpApiService
     {
         try {
             $country = strtolower(trim($country));
-            $response = Http::timeout(10)->get("{$this->baseUrl}/list/{$country}");
+            if (!preg_match('/^[a-z0-9_-]{2,20}$/', $country)) {
+                Log::warning("[FreeOtpApiService] Rejected invalid country parameter: " . substr($country, 0, 50));
+                return [];
+            }
+
+            $safeCountry = urlencode($country);
+            $response = Http::timeout(10)->get("{$this->baseUrl}/list/{$safeCountry}");
 
             if ($response->successful()) {
                 return $response->json() ?? [];
@@ -79,6 +85,11 @@ class FreeOtpApiService
             $country = strtolower(trim($country));
             $phone = preg_replace('/[^\d+]/', '', trim($phone));
 
+            if (!preg_match('/^[a-z0-9_-]{2,20}$/', $country) || !preg_match('/^\+?[0-9]{5,20}$/', $phone)) {
+                Log::warning("[FreeOtpApiService] Rejected invalid country or phone format.");
+                return null;
+            }
+
             $params = [];
             if (!empty($match)) {
                 $params['match'] = $match;
@@ -87,7 +98,9 @@ class FreeOtpApiService
                 $params['ago'] = $ago;
             }
 
-            $url = "{$this->baseUrl}/{$country}/{$phone}";
+            $safeCountry = urlencode($country);
+            $safePhone = urlencode($phone);
+            $url = "{$this->baseUrl}/{$safeCountry}/{$safePhone}";
             $response = Http::timeout(10)->get($url, $params);
 
             if ($response->successful()) {

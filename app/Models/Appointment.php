@@ -104,6 +104,19 @@ class Appointment extends Model
         ]);
     }
 
+    public function canBeConfirmed(): bool
+    {
+        return in_array($this->status, [
+            self::STATUS_PENDING,
+            self::STATUS_RESCHEDULE_REQUESTED
+        ]);
+    }
+
+    public function canBeCompleted(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMED;
+    }
+
     public function getStatusBadgeClassAttribute(): string
     {
         return match ($this->status) {
