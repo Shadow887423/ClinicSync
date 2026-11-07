@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
@@ -103,6 +105,86 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('patient.dashboard')->with('success', 'Welcome to CLINICSYNC! Your patient account has been created successfully.');
+    }
+
+    public function showForgotPassword()
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function sendResetCode(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $cleanEmail = strtolower(trim($request->email));
+        $user = User::where('email', $cleanEmail)->first();
+
+        if (!$user) {
+            return redirect()->route('password.reset.form', ['email' => $cleanEmail])
+                ->with('info', 'If an account exists for that email, a 6-digit recovery code has been generated.');
+        }
+
+        $code = sprintf("%06d", mt_rand(100000, 999999));
+        DB::table('password_resets')->where('email', $user->email)->delete();
+        DB::table('password_resets')->insert([
+            'email' => $user->email,
+            'token' => Hash::make($code),
+            'created_at' => now(),
+        ]);
+
+        if ($user->phone) {
+            app(\App\Services\SmsGatewayService::class)->sendSms(
+                $user->phone,
+                "Your CLINICSYNC Password Reset Code is: {$code}. Valid for 15 minutes.",
+                \App\Models\SmsNotification::TYPE_GENERAL
+            );
+        }
+
+        session()->flash('demo_reset_code', $code);
+
+        return redirect()->route('password.reset.form', ['email' => $user->email])
+            ->with('success', 'A 6-digit verification code has been dispatched via SMS to your registered mobile number.');
+    }
+
+    public function showResetPassword(Request $request)
+    {
+        $email = $request->query('email', '');
+        return view('auth.reset-password', compact('email'));
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email', 'exists:users,email'],
+            'code' => ['required', 'string', 'size:6'],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->letters()->numbers()
+            ],
+        ]);
+
+        $cleanEmail = strtolower(trim($request->email));
+        $record = DB::table('password_resets')->where('email', $cleanEmail)->first();
+
+        if (!$record || Carbon::parse($record->created_at)->addMinutes(15)->isPast()) {
+            return back()->withInput()->withErrors(['code' => 'The verification code has expired or is invalid. Please request a new code.']);
+        }
+
+        if (!Hash::check($request->code, $record->token)) {
+            return back()->withInput()->withErrors(['code' => 'Incorrect verification code. Please check your SMS and try again.']);
+        }
+
+        $user = User::where('email', $cleanEmail)->first();
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        DB::table('password_resets')->where('email', $cleanEmail)->delete();
+
+        return redirect()->route('login')->with('success', 'Your password has been reset successfully! You can now sign in.');
     }
 
     public function logout(Request $request)

@@ -85,4 +85,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(AppointmentActivityLog::class);
     }
+
+    public function medicalHistory()
+    {
+        return $this->hasOne(PatientMedicalHistory::class);
+    }
+
+    public function treatmentRecords()
+    {
+        return $this->hasMany(TreatmentRecord::class, 'patient_id');
+    }
 }

@@ -66,6 +66,31 @@ class Appointment extends Model
         return $this->hasMany(AppointmentActivityLog::class)->latest();
     }
 
+    public function treatmentRecord()
+    {
+        return $this->hasOne(TreatmentRecord::class);
+    }
+
+    /**
+     * Generate Google Calendar add URL
+     */
+    public function getGoogleCalendarUrlAttribute(): string
+    {
+        $title = urlencode("Dental Appointment: {$this->service_type} - CLINICSYNC");
+        $dentistName = $this->dentist ? $this->dentist->name : 'Clinic Staff Dentist';
+        $details = urlencode("Appointment Ref: {$this->appointment_number}\nDentist: {$dentistName}\nService: {$this->service_type}\nLocation: CLINICSYNC Dental Healthcare Clinic");
+        $location = urlencode("CLINICSYNC Dental Care Clinic, Medical Arts Building");
+
+        $dateStr = $this->effective_date->format('Ymd');
+        $timeStr = \Carbon\Carbon::parse($this->effective_time)->format('His');
+        $startIso = "{$dateStr}T{$timeStr}";
+        $endIso = \Carbon\Carbon::parse("{$this->effective_date->format('Y-m-d')} {$this->effective_time}")
+            ->addMinutes($this->dentist?->slot_duration_minutes ?? 30)
+            ->format('Ymd\THis');
+
+        return "https://calendar.google.com/calendar/render?action=TEMPLATE&text={$title}&dates={$startIso}/{$endIso}&details={$details}&location={$location}";
+    }
+
     public function logActivity($action, $prevStatus = null, $newStatus = null, $details = null, $userId = null)
     {
         return $this->activityLogs()->create([

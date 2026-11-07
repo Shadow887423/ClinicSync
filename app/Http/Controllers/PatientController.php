@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Dentist;
+use App\Models\PatientMedicalHistory;
 use App\Models\SmsNotification;
 use App\Services\AppointmentService;
 use Carbon\Carbon;
@@ -167,9 +168,90 @@ class PatientController extends Controller
             abort(403, 'Unauthorized access to this appointment.');
         }
 
-        $appointment->load(['dentist', 'activityLogs.user', 'smsNotifications']);
+        $appointment->load(['dentist', 'activityLogs.user', 'smsNotifications', 'treatmentRecord']);
 
         return view('patient.appointment-details', compact('appointment'));
+    }
+
+    public function medicalHistory()
+    {
+        $patient = Auth::user();
+        $history = $patient->medicalHistory ?? new PatientMedicalHistory(['user_id' => $patient->id]);
+        return view('patient.medical-history', compact('patient', 'history'));
+    }
+
+    public function updateMedicalHistory(Request $request)
+    {
+        $patient = Auth::user();
+
+        $validated = $request->validate([
+            'allergy_details' => ['nullable', 'string', 'max:500'],
+            'current_medications' => ['nullable', 'string', 'max:1000'],
+            'past_surgeries' => ['nullable', 'string', 'max:1000'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        PatientMedicalHistory::updateOrCreate(
+            ['user_id' => $patient->id],
+            [
+                'has_hypertension' => $request->boolean('has_hypertension'),
+                'has_diabetes' => $request->boolean('has_diabetes'),
+                'has_heart_condition' => $request->boolean('has_heart_condition'),
+                'has_bleeding_disorder' => $request->boolean('has_bleeding_disorder'),
+                'has_allergies' => $request->boolean('has_allergies'),
+                'allergy_details' => $validated['allergy_details'] ?? null,
+                'current_medications' => $validated['current_medications'] ?? null,
+                'past_surgeries' => $validated['past_surgeries'] ?? null,
+                'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
+                'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? null,
+            ]
+        );
+
+        return back()->with('success', 'Medical history and health disclosure updated successfully.');
+    }
+
+    public function downloadIcs(Appointment $appointment)
+    {
+        if ((int)$appointment->patient_id !== (int)Auth::id() && !Auth::user()->isStaffOrAdmin()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $dentistName = $appointment->dentist ? $appointment->dentist->name : 'Clinic Staff Dentist';
+        $dtStart = Carbon::parse("{$appointment->effective_date->format('Y-m-d')} {$appointment->effective_time}")->format('Ymd\THis');
+        $dtEnd = Carbon::parse("{$appointment->effective_date->format('Y-m-d')} {$appointment->effective_time}")
+            ->addMinutes($appointment->dentist?->slot_duration_minutes ?? 30)
+            ->format('Ymd\THis');
+        $summary = "Dental Visit: {$appointment->service_type}";
+        $description = "Ref: {$appointment->appointment_number}\\nDentist: {$dentistName}\\nService: {$appointment->service_type}\\nLocation: CLINICSYNC Dental Care Clinic";
+        $location = "CLINICSYNC Dental Care Clinic";
+
+        $ics = "BEGIN:VCALENDAR\r\n"
+            . "VERSION:2.0\r\n"
+            . "PRODID:-//CLINICSYNC//Dental Appointment System//EN\r\n"
+            . "CALSCALE:GREGORIAN\r\n"
+            . "METHOD:PUBLISH\r\n"
+            . "BEGIN:VEVENT\r\n"
+            . "UID:clinicsync-apt-{$appointment->id}@clinicsync.com\r\n"
+            . "DTSTAMP:" . gmdate('Ymd\THis\Z') . "\r\n"
+            . "DTSTART;TZID=Asia/Manila:{$dtStart}\r\n"
+            . "DTEND;TZID=Asia/Manila:{$dtEnd}\r\n"
+            . "SUMMARY:{$summary}\r\n"
+            . "DESCRIPTION:{$description}\r\n"
+            . "LOCATION:{$location}\r\n"
+            . "STATUS:CONFIRMED\r\n"
+            . "BEGIN:VALARM\r\n"
+            . "TRIGGER:-PT24H\r\n"
+            . "ACTION:DISPLAY\r\n"
+            . "DESCRIPTION:Reminder: Dental Appointment Tomorrow\r\n"
+            . "END:VALARM\r\n"
+            . "END:VEVENT\r\n"
+            . "END:VCALENDAR\r\n";
+
+        return response($ics, 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=\"clinicsync-{$appointment->appointment_number}.ics\"",
+        ]);
     }
 
     public function rescheduleForm(Appointment $appointment)

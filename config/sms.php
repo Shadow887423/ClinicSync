@@ -10,6 +10,7 @@ return [
 
     'provider' => env('SMS_GATEWAY_PROVIDER', 'simulated'),
     'simulation_enabled' => filter_var(env('SMS_SIMULATION_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
+    'queue_enabled' => filter_var(env('SMS_QUEUE_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
     'reminder_hours_before' => env('SMS_REMINDER_HOURS_BEFORE', 24),
 
     'twilio' => [

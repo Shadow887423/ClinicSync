@@ -46,6 +46,11 @@ class SmsGatewayService
             'scheduled_at' => now(),
         ]);
 
+        if (config('sms.queue_enabled', false) && config('queue.default') !== 'sync') {
+            \App\Jobs\SendSmsJob::dispatch($notification);
+            return $notification;
+        }
+
         return $this->dispatchNotification($notification);
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Dentist;
+use App\Models\TreatmentRecord;
 use App\Services\AppointmentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -113,9 +114,68 @@ class DentistController extends Controller
             abort(403, 'Unauthorized access: You are not assigned to this appointment.');
         }
 
-        $appointment->load(['patient', 'activityLogs.user']);
+        $appointment->load(['patient.medicalHistory', 'activityLogs.user', 'treatmentRecord']);
 
         return view('dentist.appointment-details', compact('dentist', 'appointment'));
+    }
+
+    public function saveTreatmentRecord(Request $request, Appointment $appointment)
+    {
+        $dentist = $this->getDentistProfile();
+
+        if ((int) $appointment->dentist_id !== (int) $dentist->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $validated = $request->validate([
+            'chief_complaint' => ['nullable', 'string', 'max:255'],
+            'diagnosis' => ['required', 'string', 'max:1000'],
+            'teeth_numbers' => ['nullable', 'string', 'max:100'],
+            'procedure_performed' => ['required', 'string', 'max:255'],
+            'clinical_notes' => ['nullable', 'string', 'max:2000'],
+            'prescription' => ['nullable', 'string', 'max:1000'],
+            'fee_amount' => ['nullable', 'numeric', 'min:0'],
+            'complete_appointment' => ['nullable', 'boolean'],
+        ]);
+
+        TreatmentRecord::updateOrCreate(
+            ['appointment_id' => $appointment->id],
+            [
+                'dentist_id' => $dentist->id,
+                'patient_id' => $appointment->patient_id,
+                'chief_complaint' => $validated['chief_complaint'] ?? null,
+                'diagnosis' => $validated['diagnosis'],
+                'teeth_numbers' => $validated['teeth_numbers'] ?? null,
+                'procedure_performed' => $validated['procedure_performed'],
+                'clinical_notes' => $validated['clinical_notes'] ?? null,
+                'prescription' => $validated['prescription'] ?? null,
+                'fee_amount' => $validated['fee_amount'] ?? null,
+            ]
+        );
+
+        if (!empty($validated['complete_appointment']) && $appointment->canBeCompleted()) {
+            $this->appointmentService->markCompleted($appointment, Auth::user());
+            return back()->with('success', 'Clinical treatment record saved and appointment marked as completed.');
+        }
+
+        return back()->with('success', 'Clinical treatment record and prescription updated successfully.');
+    }
+
+    public function printPrescription(Appointment $appointment)
+    {
+        $dentist = $this->getDentistProfile();
+
+        if ((int) $appointment->dentist_id !== (int) $dentist->id) {
+            abort(403, 'Unauthorized access to prescription.');
+        }
+
+        $appointment->load(['patient.medicalHistory', 'dentist', 'treatmentRecord']);
+
+        if (!$appointment->treatmentRecord || empty($appointment->treatmentRecord->prescription)) {
+            return back()->with('error', 'No prescription has been entered for this appointment yet.');
+        }
+
+        return view('dentist.prescription', compact('dentist', 'appointment'));
     }
 
     public function markCompleted(Appointment $appointment)

@@ -25,6 +25,12 @@ Route::middleware(['guest', 'bruteforce'])->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+
+    // Password Recovery Routes
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetCode'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset.form');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1')->name('password.update');
 });
 
 Route::middleware('auth')->group(function () {
@@ -37,6 +43,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [PatientController::class, 'dashboard'])->name('dashboard');
         Route::get('/profile', [PatientController::class, 'profile'])->name('profile');
         Route::post('/profile', [PatientController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/medical-history', [PatientController::class, 'medicalHistory'])->name('medical-history');
+        Route::post('/medical-history', [PatientController::class, 'updateMedicalHistory'])->name('medical-history.update');
         
         Route::get('/request-appointment', [PatientController::class, 'requestForm'])->name('appointments.request');
         Route::post('/request-appointment', [PatientController::class, 'storeAppointment'])->middleware('throttle:10,1')->name('appointments.store');
@@ -44,6 +52,7 @@ Route::middleware('auth')->group(function () {
         
         Route::get('/appointments', [PatientController::class, 'myAppointments'])->name('appointments.index');
         Route::get('/appointments/{appointment}', [PatientController::class, 'showAppointment'])->name('appointments.show');
+        Route::get('/appointments/{appointment}/calendar-ics', [PatientController::class, 'downloadIcs'])->name('appointments.ics');
         Route::get('/appointments/{appointment}/reschedule', [PatientController::class, 'rescheduleForm'])->name('appointments.reschedule');
         Route::post('/appointments/{appointment}/reschedule', [PatientController::class, 'storeReschedule'])->middleware('throttle:10,1')->name('appointments.reschedule.store');
         Route::post('/appointments/{appointment}/cancel', [PatientController::class, 'cancelAppointment'])->middleware('throttle:10,1')->name('appointments.cancel');
@@ -96,6 +105,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [DentistController::class, 'dashboard'])->name('dashboard');
         Route::get('/schedule', [DentistController::class, 'mySchedule'])->name('schedule');
         Route::get('/appointments/{appointment}', [DentistController::class, 'showAppointment'])->name('appointments.show');
+        Route::post('/appointments/{appointment}/treatment-record', [DentistController::class, 'saveTreatmentRecord'])->name('appointments.treatment-record');
+        Route::get('/appointments/{appointment}/prescription', [DentistController::class, 'printPrescription'])->name('appointments.prescription');
         Route::post('/appointments/{appointment}/complete', [DentistController::class, 'markCompleted'])->name('appointments.complete');
     });
 });
