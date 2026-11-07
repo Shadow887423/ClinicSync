@@ -503,12 +503,28 @@ class SmsGatewayService
     }
 
     /**
-     * Sanitize phone number to standard format
+     * Sanitize phone number to standard E.164 format
      */
     protected function sanitizePhone(string $phone): string
     {
         // Remove spaces, hyphens, parentheses
-        $cleaned = preg_replace('/[^\d+]/', '', $phone);
+        $cleaned = preg_replace('/[^\d+]/', '', trim($phone));
+
+        // Format Philippine local 09xxxxxxxxx -> +639xxxxxxxxx
+        if (str_starts_with($cleaned, '09') && strlen($cleaned) === 11) {
+            return '+63' . substr($cleaned, 1);
+        }
+
+        // Format 9xxxxxxxxx (10 digits starting with 9) -> +639xxxxxxxxx
+        if (str_starts_with($cleaned, '9') && strlen($cleaned) === 10) {
+            return '+63' . $cleaned;
+        }
+
+        // If number has no leading plus, add + if it looks like international (10-15 digits)
+        if (!str_starts_with($cleaned, '+') && strlen($cleaned) >= 10) {
+            return '+' . $cleaned;
+        }
+
         return $cleaned;
     }
 
