@@ -5,6 +5,7 @@ use App\Http\Controllers\DentistController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\Staff\MonitoringController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -97,6 +98,17 @@ Route::middleware('auth')->group(function () {
             Route::post('/dentists/{dentist}/availability', [StaffController::class, 'updateAvailability'])->name('dentists.availability');
             Route::get('/settings', [StaffController::class, 'settings'])->name('settings');
             Route::post('/test-sms', [StaffController::class, 'testSms'])->middleware('throttle:5,1')->name('test-sms');
+
+            // Advanced Real-Time Monitoring & NOC System
+            Route::prefix('monitoring')->name('monitoring.')->group(function () {
+                Route::get('/', [MonitoringController::class, 'index'])->name('index');
+                Route::get('/data', [MonitoringController::class, 'data'])->name('data');
+                Route::get('/stream', [MonitoringController::class, 'stream'])->name('stream');
+                Route::post('/alerts/{alert}/acknowledge', [MonitoringController::class, 'acknowledgeAlert'])->name('alerts.acknowledge');
+                Route::post('/alerts/{alert}/resolve', [MonitoringController::class, 'resolveAlert'])->name('alerts.resolve');
+                Route::post('/settings', [MonitoringController::class, 'updateSettings'])->name('settings.update');
+                Route::get('/export', [MonitoringController::class, 'export'])->name('export');
+            });
         });
     });
 

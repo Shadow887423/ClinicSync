@@ -303,6 +303,13 @@
                     </a>
                 </li>
                 @if(Auth::user()->isAdmin())
+                <li class="sidebar-header">System Health & NOC</li>
+                <li>
+                    <a href="{{ route('staff.monitoring.index') }}" class="sidebar-link {{ request()->routeIs('staff.monitoring.*') ? 'active' : '' }}">
+                        <i class="bi bi-activity text-info"></i> System Monitoring
+                        <span class="badge bg-success ms-auto" style="font-size: 0.65rem;">LIVE</span>
+                    </a>
+                </li>
                 <li>
                     <a href="{{ route('staff.settings') }}" class="sidebar-link {{ request()->routeIs('staff.settings') ? 'active' : '' }}">
                         <i class="bi bi-broadcast"></i> SMS Gateway Settings
@@ -437,6 +444,7 @@
             document.getElementById('sidebar').classList.toggle('show');
         });
     </script>
+    @include('partials.performance-observer')
     @yield('scripts')
 </body>
 </html>
