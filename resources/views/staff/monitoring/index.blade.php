@@ -1,50 +1,11 @@
 @extends('layouts.dashboard')
 
-@section('title', 'NOC System Monitoring & Real-Time Analytics')
-@section('page-title', 'Real-Time System Monitoring')
+@section('title', 'System Monitoring & Analytics')
+@section('page-title', 'Real-Time System Monitoring & Performance')
 
 @section('styles')
 <style>
-    /* Dark NOC Terminal Styling */
-    .noc-container {
-        background-color: #0b1320;
-        color: #e2e8f0;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    }
-
-    .noc-card {
-        background: #111c2e;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        padding: 1.25rem;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .noc-card:hover {
-        border-color: rgba(45, 212, 191, 0.4);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-
-    .noc-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.75px;
-        color: #94a3b8;
-        margin-bottom: 0.35rem;
-    }
-
-    .noc-value {
-        font-size: 1.65rem;
-        font-weight: 800;
-        color: #ffffff;
-        letter-spacing: -0.5px;
-        line-height: 1.2;
-    }
-
+    /* Status Pulse Dot */
     .pulse-dot {
         display: inline-block;
         width: 10px;
@@ -77,503 +38,487 @@
         100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
     }
 
-    .noc-table {
-        color: #cbd5e1;
-        font-size: 0.85rem;
-    }
-
-    .noc-table th {
-        background-color: #0d1726;
-        color: #94a3b8;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.72rem;
-        letter-spacing: 0.5px;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        padding: 0.75rem;
-    }
-
-    .noc-table td {
-        padding: 0.75rem;
-        border-bottom: 1px solid rgba(255,255,255,0.04);
-        vertical-align: middle;
-    }
-
-    .noc-table tr:hover td {
-        background-color: rgba(255,255,255,0.02);
-    }
-
-    .progress-bar-custom {
-        height: 8px;
-        background-color: #1e293b;
-        border-radius: 999px;
-        overflow: hidden;
-    }
-
+    /* Web Vitals Badges */
     .vital-badge {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        padding: 0.25rem 0.6rem;
+        padding: 0.2rem 0.55rem;
         border-radius: 6px;
     }
 
-    .vital-excellent { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .vital-good { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-    .vital-moderate { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .vital-slow { background-color: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
-    .vital-critical { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .vital-excellent { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .vital-good { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .vital-moderate { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .vital-slow { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+    .vital-critical { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+    .control-toolbar {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.85rem 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
 </style>
 @endsection
 
 @section('content')
-<div class="noc-container">
-
-    <!-- Top Status Control Bar -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pb-3 mb-4 border-bottom border-secondary border-opacity-25">
-        <div class="d-flex align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-secondary border-opacity-25">
-                <span class="pulse-dot" id="statusDot"></span>
-                <span class="small fw-bold text-white" id="connectionStatusText">Connecting (SSE)...</span>
-            </div>
-            <div class="small text-muted d-none d-md-block">
-                Last update: <span class="text-white" id="lastUpdatedText">{{ now()->format('H:i:s') }}</span>
-            </div>
-            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 d-none d-lg-inline-block">
-                <i class="bi bi-shield-check me-1"></i> Zero Fake Data Policy Enforced
-            </span>
+<!-- Control & Connection Status Bar -->
+<div class="control-toolbar mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-light border">
+            <span class="pulse-dot" id="statusDot"></span>
+            <span class="small fw-bold text-dark" id="connectionStatusText">Connecting (Live Stream)...</span>
         </div>
-
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <!-- Interval Selector -->
-            <select class="form-select form-select-sm bg-dark text-white border-secondary border-opacity-50" id="intervalSelect" style="width: auto;">
-                <option value="1m">Last 1 Minute</option>
-                <option value="5m" selected>Last 5 Minutes</option>
-                <option value="15m">Last 15 Minutes</option>
-                <option value="30m">Last 30 Minutes</option>
-                <option value="1h">Last 1 Hour</option>
-                <option value="24h">Last 24 Hours</option>
-            </select>
-
-            <!-- Play/Pause Button -->
-            <button class="btn btn-sm btn-outline-light" id="pauseResumeBtn" title="Pause live visualization">
-                <i class="bi bi-pause-fill me-1" id="pauseIcon"></i> <span id="pauseBtnText">Pause</span>
-            </button>
-
-            <!-- Manual Refresh -->
-            <button class="btn btn-sm btn-outline-secondary text-white" id="refreshBtn" title="Refresh metrics">
-                <i class="bi bi-arrow-repeat"></i>
-            </button>
-
-            <!-- Export CSV -->
-            <button class="btn btn-sm btn-teal" data-bs-toggle="modal" data-bs-target="#exportModal">
-                <i class="bi bi-download me-1"></i> Export Report
-            </button>
-
-            <!-- Settings -->
-            <button class="btn btn-sm btn-outline-secondary text-white" data-bs-toggle="modal" data-bs-target="#settingsModal">
-                <i class="bi bi-sliders"></i>
-            </button>
+        <div class="small text-muted d-none d-md-block">
+            Last update: <span class="fw-semibold text-dark" id="lastUpdatedText">{{ now()->format('H:i:s') }}</span>
         </div>
+        <span class="badge bg-teal bg-opacity-10 text-teal border border-teal border-opacity-25 d-none d-lg-inline-block" style="color: var(--secondary-teal);">
+            <i class="bi bi-shield-check me-1"></i> Zero Fake Data Policy Enforced
+        </span>
     </div>
 
-    <!-- Active Alerts Banner (if any) -->
-    <div id="alertsContainer" class="mb-4" style="display: none;"></div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Interval Selector -->
+        <select class="form-select form-select-sm" id="intervalSelect" style="width: auto;">
+            <option value="1m">Last 1 Minute</option>
+            <option value="5m" selected>Last 5 Minutes</option>
+            <option value="15m">Last 15 Minutes</option>
+            <option value="30m">Last 30 Minutes</option>
+            <option value="1h">Last 1 Hour</option>
+            <option value="24h">Last 24 Hours</option>
+        </select>
 
-    <!-- 1. Real-Time Overview Cards -->
-    <div class="row g-3 mb-4">
-        <!-- Active Visitors -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="noc-card h-100">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="noc-label">Active Visitors</span>
-                    <i class="bi bi-people-fill text-info"></i>
-                </div>
-                <div class="noc-value text-info" id="metricActiveVisitors">--</div>
-                <div class="small text-muted mt-1">Live in last 5 min</div>
-            </div>
-        </div>
+        <!-- Play/Pause Button -->
+        <button class="btn btn-sm btn-outline-secondary" id="pauseResumeBtn" title="Pause live visualization">
+            <i class="bi bi-pause-fill me-1" id="pauseIcon"></i> <span id="pauseBtnText">Pause</span>
+        </button>
 
-        <!-- Requests Per Second -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="noc-card h-100">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="noc-label">Traffic Rate</span>
-                    <i class="bi bi-lightning-charge-fill text-warning"></i>
-                </div>
-                <div class="noc-value" id="metricRps">--</div>
-                <div class="small text-muted mt-1">Requests / sec (RPS)</div>
-            </div>
-        </div>
+        <!-- Manual Refresh -->
+        <button class="btn btn-sm btn-outline-secondary" id="refreshBtn" title="Refresh metrics">
+            <i class="bi bi-arrow-repeat"></i>
+        </button>
 
-        <!-- Inbound Bandwidth -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="noc-card h-100">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="noc-label">Inbound Traffic</span>
-                    <i class="bi bi-arrow-down-left-circle-fill text-primary"></i>
-                </div>
-                <div class="noc-value text-primary" id="metricInbound">--</div>
-                <div class="small text-muted mt-1" id="metricInboundRate">--</div>
-            </div>
-        </div>
+        <!-- Export CSV -->
+        <button class="btn btn-sm btn-teal" data-bs-toggle="modal" data-bs-target="#exportModal">
+            <i class="bi bi-download me-1"></i> Export CSV
+        </button>
 
-        <!-- Outbound Bandwidth -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="noc-card h-100">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="noc-label">Outbound Traffic</span>
-                    <i class="bi bi-arrow-up-right-circle-fill text-success"></i>
-                </div>
-                <div class="noc-value text-success" id="metricOutbound">--</div>
-                <div class="small text-muted mt-1" id="metricOutboundRate">--</div>
-            </div>
-        </div>
-
-        <!-- Avg Page Loading Time -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="noc-card h-100">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="noc-label">Avg Loading Time</span>
-                    <i class="bi bi-stopwatch-fill text-teal" style="color: var(--secondary-teal);"></i>
-                </div>
-                <div class="noc-value" id="metricAvgLoading">--</div>
-                <div class="small text-muted mt-1">Server + response time</div>
-            </div>
-        </div>
-
-        <!-- System Uptime -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="noc-card h-100">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="noc-label">Website Uptime</span>
-                    <i class="bi bi-shield-check text-success"></i>
-                </div>
-                <div class="noc-value text-success" id="metricUptime">--</div>
-                <div class="small text-muted mt-1" id="metricErrorRate">Error Rate: 0.0%</div>
-            </div>
-        </div>
+        <!-- Settings -->
+        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Alert Thresholds">
+            <i class="bi bi-sliders"></i>
+        </button>
     </div>
-
-    <!-- 2. Live Network Traffic Pulse & Geographic Distribution -->
-    <div class="row g-4 mb-4">
-        <!-- NOC Network Traffic Pulse Chart -->
-        <div class="col-lg-8">
-            <div class="noc-card h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div>
-                        <h6 class="fw-bold text-white mb-0">
-                            <i class="bi bi-activity text-teal me-2" style="color: var(--secondary-teal);"></i>
-                            Live Network Traffic Pulse
-                        </h6>
-                        <span class="small text-muted">Inbound vs Outbound bandwidth volume</span>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-primary bg-opacity-20 text-primary border border-primary border-opacity-25">Inbound</span>
-                        <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25">Outbound</span>
-                    </div>
-                </div>
-                <div style="height: 280px; position: relative;">
-                    <canvas id="trafficPulseChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Geographic Visitor Distribution -->
-        <div class="col-lg-4">
-            <div class="noc-card h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div>
-                        <h6 class="fw-bold text-white mb-0">
-                            <i class="bi bi-globe-americas text-info me-2"></i>
-                            Geographic Distribution
-                        </h6>
-                        <span class="small text-muted">Top traffic origins by location</span>
-                    </div>
-                </div>
-                <div class="table-responsive" style="max-height: 280px;">
-                    <table class="table table-borderless noc-table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Country / Region</th>
-                                <th class="text-end">Visitors</th>
-                                <th class="text-end">Share</th>
-                            </tr>
-                        </thead>
-                        <tbody id="geoTableBody">
-                            <tr>
-                                <td colspan="3" class="text-center text-muted py-3">Waiting for traffic data...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="small text-muted mt-2 border-top border-secondary border-opacity-25 pt-2" style="font-size: 0.72rem;">
-                    <i class="bi bi-lock me-1"></i> Privacy-compliant anonymized IP resolution
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Server Health & Core Web Vitals -->
-    <div class="row g-4 mb-4">
-        <!-- Real Server Health -->
-        <div class="col-lg-6">
-            <div class="noc-card h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div>
-                        <h6 class="fw-bold text-white mb-0">
-                            <i class="bi bi-cpu-fill text-warning me-2"></i>
-                            Genuine Server Health
-                        </h6>
-                        <span class="small text-muted">Hardware utilization & database latency</span>
-                    </div>
-                    <span class="badge bg-success" id="serverStatusBadge">Operational</span>
-                </div>
-
-                <div class="row g-3">
-                    <!-- CPU -->
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded-3" style="background-color: #0d1726;">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="noc-label">CPU Load</span>
-                                <span class="fw-bold text-white" id="serverCpuText">--</span>
-                            </div>
-                            <div class="progress-bar-custom">
-                                <div class="bg-warning h-100" id="serverCpuBar" style="width: 0%;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- RAM -->
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded-3" style="background-color: #0d1726;">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="noc-label">Memory (RAM)</span>
-                                <span class="fw-bold text-white" id="serverRamText">--</span>
-                            </div>
-                            <div class="progress-bar-custom">
-                                <div class="bg-info h-100" id="serverRamBar" style="width: 0%;"></div>
-                            </div>
-                            <div class="small text-muted mt-1" style="font-size: 0.7rem;" id="serverRamDetails">--</div>
-                        </div>
-                    </div>
-
-                    <!-- Disk -->
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded-3" style="background-color: #0d1726;">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="noc-label">Storage Disk</span>
-                                <span class="fw-bold text-white" id="serverDiskText">--</span>
-                            </div>
-                            <div class="progress-bar-custom">
-                                <div class="bg-primary h-100" id="serverDiskBar" style="width: 0%;"></div>
-                            </div>
-                            <div class="small text-muted mt-1" style="font-size: 0.7rem;" id="serverDiskDetails">--</div>
-                        </div>
-                    </div>
-
-                    <!-- Database Health -->
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded-3" style="background-color: #0d1726;">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="noc-label">Database Latency</span>
-                                <span class="fw-bold text-white" id="serverDbLatency">--</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mt-2 small text-muted">
-                                <span>Active Connections: <strong class="text-white" id="serverDbConnections">--</strong></span>
-                                <span>Uptime: <strong class="text-white" id="serverUptimeDuration">--</strong></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Real Browser Web Vitals -->
-        <div class="col-lg-6">
-            <div class="noc-card h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div>
-                        <h6 class="fw-bold text-white mb-0">
-                            <i class="bi bi-speedometer text-success me-2"></i>
-                            Browser Web Vitals & Page Loading
-                        </h6>
-                        <span class="small text-muted">Field performance measured via browser PerformanceObserver</span>
-                    </div>
-                </div>
-
-                <div class="row g-3">
-                    <div class="col-sm-4 col-6">
-                        <div class="p-2 rounded-3 text-center" style="background-color: #0d1726;">
-                            <span class="noc-label">FCP (Paint)</span>
-                            <div class="h5 fw-bold text-white mb-1" id="vitalFcp">--</div>
-                            <span class="vital-badge vital-good" id="badgeFcp">Good</span>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-4 col-6">
-                        <div class="p-2 rounded-3 text-center" style="background-color: #0d1726;">
-                            <span class="noc-label">LCP (Content)</span>
-                            <div class="h5 fw-bold text-white mb-1" id="vitalLcp">--</div>
-                            <span class="vital-badge vital-good" id="badgeLcp">Good</span>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-4 col-6">
-                        <div class="p-2 rounded-3 text-center" style="background-color: #0d1726;">
-                            <span class="noc-label">TTFB (Backend)</span>
-                            <div class="h5 fw-bold text-white mb-1" id="vitalTtfb">--</div>
-                            <span class="vital-badge vital-excellent" id="badgeTtfb">Excellent</span>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-4 col-6">
-                        <div class="p-2 rounded-3 text-center" style="background-color: #0d1726;">
-                            <span class="noc-label">DOM Loaded</span>
-                            <div class="h5 fw-bold text-white mb-1" id="vitalDom">--</div>
-                            <span class="small text-muted">Ready event</span>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-4 col-6">
-                        <div class="p-2 rounded-3 text-center" style="background-color: #0d1726;">
-                            <span class="noc-label">Fully Loaded</span>
-                            <div class="h5 fw-bold text-white mb-1" id="vitalFullyLoaded">--</div>
-                            <span class="small text-muted">Window load</span>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-4 col-6">
-                        <div class="p-2 rounded-3 text-center" style="background-color: #0d1726;">
-                            <span class="noc-label">CLS (Shift)</span>
-                            <div class="h5 fw-bold text-white mb-1" id="vitalCls">--</div>
-                            <span class="vital-badge vital-excellent" id="badgeCls">Stable</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. Live Visitor Activity Monitor -->
-    <div class="noc-card mb-4">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-            <div>
-                <h6 class="fw-bold text-white mb-0">
-                    <i class="bi bi-person-lines-fill text-info me-2"></i>
-                    Live Visitor Activity Monitor
-                </h6>
-                <span class="small text-muted">Real-time sessions browsing ClinicSync</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary border-opacity-50" id="visitorSearchInput" placeholder="Filter URL, Device or Location...">
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-borderless noc-table mb-0" id="visitorTable">
-                <thead>
-                    <tr>
-                        <th>Anonymous Session</th>
-                        <th>Target Webpage</th>
-                        <th>Device & Browser</th>
-                        <th>OS</th>
-                        <th>Location</th>
-                        <th>Duration</th>
-                        <th>Pages</th>
-                        <th>Last Activity</th>
-                    </tr>
-                </thead>
-                <tbody id="visitorTableBody">
-                    <tr>
-                        <td colspan="8" class="text-center text-muted py-4">Waiting for incoming visitor traffic...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- 5. API & Endpoint Monitoring & Slow Pages -->
-    <div class="row g-4">
-        <!-- API Endpoint Performance -->
-        <div class="col-lg-6">
-            <div class="noc-card h-100">
-                <h6 class="fw-bold text-white mb-2">
-                    <i class="bi bi-hdd-network-fill text-primary me-2"></i>
-                    API & Endpoint Monitoring
-                </h6>
-                <span class="small text-muted d-block mb-3">Top accessed routes, response duration & status codes</span>
-                <div class="table-responsive" style="max-height: 300px;">
-                    <table class="table table-borderless noc-table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Method / Route</th>
-                                <th class="text-end">Requests</th>
-                                <th class="text-end">Avg Latency</th>
-                                <th class="text-end">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="apiTableBody">
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-3">No endpoint traffic recorded in this interval.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Slow Pages & Bottlenecks -->
-        <div class="col-lg-6">
-            <div class="noc-card h-100">
-                <h6 class="fw-bold text-white mb-2">
-                    <i class="bi bi-hourglass-split text-warning me-2"></i>
-                    Page Latency & Performance Classification
-                </h6>
-                <span class="small text-muted d-block mb-3">Pages ranked by response duration</span>
-                <div class="table-responsive" style="max-height: 300px;">
-                    <table class="table table-borderless noc-table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Route / Page</th>
-                                <th class="text-end">Hits</th>
-                                <th class="text-end">Latency</th>
-                                <th class="text-end">Rating</th>
-                            </tr>
-                        </thead>
-                        <tbody id="slowPagesTableBody">
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-3">No slow page bottlenecks identified.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
-<!-- Export Modal -->
+<!-- Active Alerts Banner (if any) -->
+<div id="alertsContainer" class="mb-4" style="display: none;"></div>
+
+<!-- 1. Real-Time Overview Stat Cards -->
+<div class="row g-3 mb-4">
+    <!-- Active Visitors -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card border-info border-opacity-50">
+            <div>
+                <div class="text-muted small fw-semibold">Active Visitors</div>
+                <div class="h3 fw-bold text-info mb-0" id="metricActiveVisitors">--</div>
+                <div class="text-muted" style="font-size: 0.72rem;">Last 5 minutes</div>
+            </div>
+            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Traffic Rate / RPS -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card border-warning border-opacity-50">
+            <div>
+                <div class="text-muted small fw-semibold">Traffic Rate</div>
+                <div class="h3 fw-bold text-warning mb-0" id="metricRps">--</div>
+                <div class="text-muted" style="font-size: 0.72rem;">Requests / sec</div>
+            </div>
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                <i class="bi bi-lightning-charge-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inbound Traffic -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card border-primary border-opacity-50">
+            <div>
+                <div class="text-muted small fw-semibold">Inbound Traffic</div>
+                <div class="h3 fw-bold text-primary mb-0" id="metricInbound">--</div>
+                <div class="text-muted" style="font-size: 0.72rem;" id="metricInboundRate">--</div>
+            </div>
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                <i class="bi bi-arrow-down-left-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outbound Traffic -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card border-success border-opacity-50">
+            <div>
+                <div class="text-muted small fw-semibold">Outbound Traffic</div>
+                <div class="h3 fw-bold text-success mb-0" id="metricOutbound">--</div>
+                <div class="text-muted" style="font-size: 0.72rem;" id="metricOutboundRate">--</div>
+            </div>
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-arrow-up-right-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avg Loading Time -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card">
+            <div>
+                <div class="text-muted small fw-semibold">Avg Loading Time</div>
+                <div class="h3 fw-bold text-teal mb-0" style="color: var(--secondary-teal);" id="metricAvgLoading">--</div>
+                <div class="text-muted" style="font-size: 0.72rem;">Server latency</div>
+            </div>
+            <div class="stat-icon bg-secondary bg-opacity-10 text-secondary">
+                <i class="bi bi-stopwatch-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Uptime -->
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card">
+            <div>
+                <div class="text-muted small fw-semibold">Website Uptime</div>
+                <div class="h3 fw-bold text-success mb-0" id="metricUptime">--</div>
+                <div class="text-muted" style="font-size: 0.72rem;" id="metricErrorRate">Error: 0.0%</div>
+            </div>
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-shield-check"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Live Network Traffic Pulse & Geographic Distribution -->
+<div class="row g-4 mb-4">
+    <!-- Live Traffic Pulse Chart -->
+    <div class="col-lg-8">
+        <div class="card card-custom p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-activity text-teal me-2" style="color: var(--secondary-teal);"></i>
+                        Live Network Traffic Pulse
+                    </h6>
+                    <span class="small text-muted">Inbound vs Outbound bandwidth volume</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">Inbound</span>
+                    <span class="badge bg-teal bg-opacity-10 text-teal border border-teal border-opacity-25" style="color: var(--secondary-teal);">Outbound</span>
+                </div>
+            </div>
+            <div style="height: 280px; position: relative;">
+                <canvas id="trafficPulseChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geographic Visitor Distribution -->
+    <div class="col-lg-4">
+        <div class="card card-custom p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-globe-americas text-info me-2"></i>
+                        Geographic Distribution
+                    </h6>
+                    <span class="small text-muted">Top traffic origins by location</span>
+                </div>
+            </div>
+            <div class="table-responsive" style="max-height: 260px;">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Country / Region</th>
+                            <th class="text-end">Visitors</th>
+                            <th class="text-end">Share</th>
+                        </tr>
+                    </thead>
+                    <tbody id="geoTableBody">
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-3">Waiting for traffic data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="small text-muted mt-3 border-top pt-2" style="font-size: 0.72rem;">
+                <i class="bi bi-lock me-1"></i> Privacy-compliant anonymized IP resolution
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Server Health & Core Web Vitals -->
+<div class="row g-4 mb-4">
+    <!-- Server Health -->
+    <div class="col-lg-6">
+        <div class="card card-custom p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-cpu-fill text-warning me-2"></i>
+                        Genuine Server Health
+                    </h6>
+                    <span class="small text-muted">Hardware utilization & database latency</span>
+                </div>
+                <span class="badge bg-success" id="serverStatusBadge">Operational</span>
+            </div>
+
+            <div class="row g-3">
+                <!-- CPU -->
+                <div class="col-sm-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small fw-bold text-uppercase">CPU Load</span>
+                            <span class="fw-bold text-dark" id="serverCpuText">--</span>
+                        </div>
+                        <div class="progress" style="height: 7px;">
+                            <div class="progress-bar bg-warning" id="serverCpuBar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RAM -->
+                <div class="col-sm-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small fw-bold text-uppercase">Memory (RAM)</span>
+                            <span class="fw-bold text-dark" id="serverRamText">--</span>
+                        </div>
+                        <div class="progress" style="height: 7px;">
+                            <div class="progress-bar bg-info" id="serverRamBar" style="width: 0%;"></div>
+                        </div>
+                        <div class="text-muted mt-1" style="font-size: 0.7rem;" id="serverRamDetails">--</div>
+                    </div>
+                </div>
+
+                <!-- Disk -->
+                <div class="col-sm-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small fw-bold text-uppercase">Storage Disk</span>
+                            <span class="fw-bold text-dark" id="serverDiskText">--</span>
+                        </div>
+                        <div class="progress" style="height: 7px;">
+                            <div class="progress-bar bg-primary" id="serverDiskBar" style="width: 0%;"></div>
+                        </div>
+                        <div class="text-muted mt-1" style="font-size: 0.7rem;" id="serverDiskDetails">--</div>
+                    </div>
+                </div>
+
+                <!-- Database Health -->
+                <div class="col-sm-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small fw-bold text-uppercase">Database Latency</span>
+                            <span class="fw-bold text-dark" id="serverDbLatency">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 small text-muted">
+                            <span>Active DB: <strong class="text-dark" id="serverDbConnections">--</strong></span>
+                            <span>Uptime: <strong class="text-dark" id="serverUptimeDuration">--</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Browser Web Vitals -->
+    <div class="col-lg-6">
+        <div class="card card-custom p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-speedometer text-success me-2"></i>
+                        Browser Web Vitals & Page Loading
+                    </h6>
+                    <span class="small text-muted">Field performance measured via PerformanceObserver</span>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-sm-4 col-6">
+                    <div class="p-3 bg-light rounded-3 border text-center">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">FCP (Paint)</span>
+                        <div class="h5 fw-bold text-dark mb-1" id="vitalFcp">--</div>
+                        <span class="vital-badge vital-good" id="badgeFcp">Good</span>
+                    </div>
+                </div>
+
+                <div class="col-sm-4 col-6">
+                    <div class="p-3 bg-light rounded-3 border text-center">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">LCP (Content)</span>
+                        <div class="h5 fw-bold text-dark mb-1" id="vitalLcp">--</div>
+                        <span class="vital-badge vital-good" id="badgeLcp">Good</span>
+                    </div>
+                </div>
+
+                <div class="col-sm-4 col-6">
+                    <div class="p-3 bg-light rounded-3 border text-center">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">TTFB (Backend)</span>
+                        <div class="h5 fw-bold text-dark mb-1" id="vitalTtfb">--</div>
+                        <span class="vital-badge vital-excellent" id="badgeTtfb">Excellent</span>
+                    </div>
+                </div>
+
+                <div class="col-sm-4 col-6">
+                    <div class="p-3 bg-light rounded-3 border text-center">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">DOM Loaded</span>
+                        <div class="h5 fw-bold text-dark mb-1" id="vitalDom">--</div>
+                        <span class="small text-muted">Ready event</span>
+                    </div>
+                </div>
+
+                <div class="col-sm-4 col-6">
+                    <div class="p-3 bg-light rounded-3 border text-center">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">Fully Loaded</span>
+                        <div class="h5 fw-bold text-dark mb-1" id="vitalFullyLoaded">--</div>
+                        <span class="small text-muted">Window load</span>
+                    </div>
+                </div>
+
+                <div class="col-sm-4 col-6">
+                    <div class="p-3 bg-light rounded-3 border text-center">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">CLS (Shift)</span>
+                        <div class="h5 fw-bold text-dark mb-1" id="vitalCls">--</div>
+                        <span class="vital-badge vital-excellent" id="badgeCls">Stable</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Live Visitor Activity Monitor -->
+<div class="card card-custom p-4 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div>
+            <h6 class="fw-bold text-dark mb-0">
+                <i class="bi bi-person-lines-fill text-info me-2"></i>
+                Live Visitor Activity Monitor
+            </h6>
+            <span class="small text-muted">Real-time sessions browsing ClinicSync</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <input type="text" class="form-control form-control-sm" id="visitorSearchInput" placeholder="Filter URL, Device or Location...">
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small" id="visitorTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Anonymous Session</th>
+                    <th>Target Webpage</th>
+                    <th>Device & Browser</th>
+                    <th>OS</th>
+                    <th>Location</th>
+                    <th>Duration</th>
+                    <th>Pages</th>
+                    <th>Last Activity</th>
+                </tr>
+            </thead>
+            <tbody id="visitorTableBody">
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">Waiting for incoming visitor traffic...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 5. API & Endpoint Monitoring & Slow Pages -->
+<div class="row g-4">
+    <!-- API Endpoint Performance -->
+    <div class="col-lg-6">
+        <div class="card card-custom p-4 h-100">
+            <h6 class="fw-bold text-dark mb-1">
+                <i class="bi bi-hdd-network-fill text-primary me-2"></i>
+                API & Endpoint Monitoring
+            </h6>
+            <span class="small text-muted d-block mb-3">Top accessed routes, response duration & status codes</span>
+            <div class="table-responsive" style="max-height: 300px;">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Method / Route</th>
+                            <th class="text-end">Requests</th>
+                            <th class="text-end">Avg Latency</th>
+                            <th class="text-end">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="apiTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">No endpoint traffic recorded in this interval.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slow Pages & Bottlenecks -->
+    <div class="col-lg-6">
+        <div class="card card-custom p-4 h-100">
+            <h6 class="fw-bold text-dark mb-1">
+                <i class="bi bi-hourglass-split text-warning me-2"></i>
+                Page Latency & Performance Classification
+            </h6>
+            <span class="small text-muted d-block mb-3">Pages ranked by response duration</span>
+            <div class="table-responsive" style="max-height: 300px;">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Route / Page</th>
+                            <th class="text-end">Hits</th>
+                            <th class="text-end">Latency</th>
+                            <th class="text-end">Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody id="slowPagesTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">No slow page bottlenecks identified.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal (ClinicSync Standard Light Dialog) -->
 <div class="modal fade" id="exportModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title"><i class="bi bi-file-earmark-spreadsheet me-2 text-teal"></i> Export Monitoring Data</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-file-earmark-spreadsheet me-2 text-teal" style="color: var(--secondary-teal);"></i> Export Monitoring Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('staff.monitoring.export') }}" method="GET">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Dataset Type</label>
-                        <select name="type" class="form-select bg-black text-white border-secondary">
+                        <label class="form-label small fw-semibold text-dark">Dataset Type</label>
+                        <select name="type" class="form-select">
                             <option value="traffic">Traffic Logs (HTTP Requests & Bandwidth)</option>
                             <option value="performance">Browser Performance & Web Vitals</option>
                             <option value="server">Server Hardware Metrics (CPU, RAM, Disk)</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">History Window</label>
-                        <select name="days" class="form-select bg-black text-white border-secondary">
+                        <label class="form-label small fw-semibold text-dark">History Window</label>
+                        <select name="days" class="form-select">
                             <option value="1">Last 24 Hours</option>
                             <option value="7" selected>Last 7 Days</option>
                             <option value="30">Last 30 Days</option>
@@ -584,7 +529,7 @@
                         Downloads authentic raw records in standard CSV format without simulated entries.
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer border-top">
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-sm btn-teal"><i class="bi bi-download me-1"></i> Download CSV</button>
                 </div>
@@ -593,36 +538,36 @@
     </div>
 </div>
 
-<!-- Settings Modal -->
+<!-- Settings Modal (ClinicSync Standard Light Dialog) -->
 <div class="modal fade" id="settingsModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white border-secondary">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title"><i class="bi bi-sliders me-2 text-warning"></i> Monitoring & Alert Thresholds</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-sliders me-2 text-warning"></i> Monitoring & Alert Thresholds</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="settingsForm">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">CPU Utilization Alert Threshold (%)</label>
-                        <input type="number" name="cpu_threshold" class="form-control bg-black text-white border-secondary" value="{{ $settings['cpu_threshold'] }}" min="10" max="100" required>
+                        <label class="form-label small fw-semibold text-dark">CPU Utilization Alert Threshold (%)</label>
+                        <input type="number" name="cpu_threshold" class="form-control" value="{{ $settings['cpu_threshold'] }}" min="10" max="100" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">RAM Utilization Alert Threshold (%)</label>
-                        <input type="number" name="ram_threshold" class="form-control bg-black text-white border-secondary" value="{{ $settings['ram_threshold'] }}" min="10" max="100" required>
+                        <label class="form-label small fw-semibold text-dark">RAM Utilization Alert Threshold (%)</label>
+                        <input type="number" name="ram_threshold" class="form-control" value="{{ $settings['ram_threshold'] }}" min="10" max="100" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">High Page Response Latency Alert (ms)</label>
-                        <input type="number" name="latency_threshold" class="form-control bg-black text-white border-secondary" value="{{ $settings['latency_threshold'] }}" min="100" max="30000" step="100" required>
+                        <label class="form-label small fw-semibold text-dark">High Page Response Latency Alert (ms)</label>
+                        <input type="number" name="latency_threshold" class="form-control" value="{{ $settings['latency_threshold'] }}" min="100" max="30000" step="100" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Raw Metrics Retention Period (Days)</label>
-                        <input type="number" name="retention_days" class="form-control bg-black text-white border-secondary" value="{{ $settings['retention_days'] }}" min="1" max="365" required>
+                        <label class="form-label small fw-semibold text-dark">Raw Metrics Retention Period (Days)</label>
+                        <input type="number" name="retention_days" class="form-control" value="{{ $settings['retention_days'] }}" min="1" max="365" required>
                     </div>
                     <div id="settingsAlertBox" class="alert d-none small"></div>
                 </div>
-                <div class="modal-footer border-secondary">
+                <div class="modal-footer border-top">
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-sm btn-teal" id="saveSettingsBtn">Save Configuration</button>
                 </div>
@@ -642,7 +587,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let pollingInterval = null;
     let currentInterval = '5m';
 
-    // Chart.js Traffic Pulse Chart
+    // Chart.js Traffic Pulse Chart (Styled identically to ClinicSync charts)
     const ctx = document.getElementById('trafficPulseChart').getContext('2d');
     const trafficChart = new Chart(ctx, {
         type: 'line',
@@ -653,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     label: 'Inbound (KB)',
                     data: [],
                     borderColor: '#0284c7',
-                    backgroundColor: 'rgba(2, 132, 199, 0.15)',
+                    backgroundColor: 'rgba(2, 132, 199, 0.1)',
                     fill: true,
                     tension: 0.35,
                     borderWidth: 2,
@@ -662,8 +607,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     label: 'Outbound (KB)',
                     data: [],
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: '#0d9488',
+                    backgroundColor: 'rgba(13, 148, 136, 0.1)',
                     fill: true,
                     tension: 0.35,
                     borderWidth: 2,
@@ -677,12 +622,12 @@ document.addEventListener('DOMContentLoaded', function() {
             animation: { duration: 400 },
             scales: {
                 x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#94a3b8', font: { size: 10 } }
+                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                    ticks: { color: '#64748b', font: { size: 10 } }
                 },
                 y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#94a3b8', font: { size: 10 } },
+                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                    ticks: { color: '#64748b', font: { size: 10 } },
                     beginAtZero: true
                 }
             },
@@ -691,11 +636,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: '#0f172a',
-                    titleColor: '#e2e8f0',
-                    bodyColor: '#cbd5e1',
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    borderWidth: 1
+                    backgroundColor: '#0f2744',
+                    titleColor: '#ffffff',
+                    bodyColor: '#e2e8f0',
+                    borderWidth: 0,
+                    padding: 10,
+                    cornerRadius: 8
                 }
             }
         }
@@ -794,7 +740,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('metricOutboundRate').textContent = ov.outbound_rate;
         document.getElementById('metricAvgLoading').textContent = ov.avg_loading_time_ms > 0 ? ov.avg_loading_time_ms + ' ms' : 'Waiting for Data';
         document.getElementById('metricUptime').textContent = ov.uptime_percent + '%';
-        document.getElementById('metricErrorRate').textContent = 'Error Rate: ' + ov.error_rate_percent + '%';
+        document.getElementById('metricErrorRate').textContent = 'Error: ' + ov.error_rate_percent + '%';
 
         // 2. Network Pulse Chart
         if (data.network_pulse && data.network_pulse.length > 0) {
@@ -809,8 +755,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.geographic_distribution && data.geographic_distribution.length > 0) {
             geoTbody.innerHTML = data.geographic_distribution.map(g => `
                 <tr>
-                    <td><span class="badge bg-dark border border-secondary text-info me-1">${g.code}</span> ${g.name}</td>
-                    <td class="text-end fw-semibold text-white">${g.visitors}</td>
+                    <td><span class="badge bg-light text-dark border me-1">${g.code}</span> <span class="fw-semibold text-dark">${g.name}</span></td>
+                    <td class="text-end fw-bold text-dark">${g.visitors}</td>
                     <td class="text-end text-muted">${g.percentage}%</td>
                 </tr>
             `).join('');
@@ -856,18 +802,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.live_visitors && data.live_visitors.length > 0) {
             visTbody.innerHTML = data.live_visitors.map(v => `
                 <tr class="visitor-row">
-                    <td><span class="font-monospace text-info small">${v.session_hash}</span></td>
-                    <td><span class="badge bg-dark border border-secondary text-white">${v.method}</span> <span class="text-white">${v.url}</span></td>
+                    <td><span class="font-monospace text-primary small fw-semibold">${v.session_hash}</span></td>
+                    <td><span class="badge bg-light text-dark border me-1">${v.method}</span> <span class="fw-semibold text-dark">${v.url}</span></td>
                     <td><i class="bi bi-${v.device_type === 'Mobile' ? 'phone' : (v.device_type === 'Tablet' ? 'tablet' : 'laptop')} me-1 text-muted"></i> ${v.device_type} &bull; ${v.browser}</td>
-                    <td>${v.os}</td>
-                    <td><span class="badge bg-secondary me-1">${v.country_code}</span> ${v.country_name}</td>
-                    <td>${v.duration_formatted}</td>
-                    <td><span class="badge bg-dark text-teal">${v.page_count}</span></td>
+                    <td><span class="text-muted">${v.os}</span></td>
+                    <td><span class="badge bg-light text-dark border me-1">${v.country_code}</span> ${v.country_name}</td>
+                    <td><span class="text-muted">${v.duration_formatted}</span></td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-dark border">${v.page_count}</span></td>
                     <td class="text-muted">${v.last_seen}</td>
                 </tr>
             `).join('');
         } else {
-            visTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">No active sessions browsing at this moment.</td></tr>';
+            visTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No active sessions browsing at this moment.</td></tr>';
         }
 
         // 7. API Endpoints Table
@@ -875,8 +821,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.api_endpoints && data.api_endpoints.length > 0) {
             apiTbody.innerHTML = data.api_endpoints.map(a => `
                 <tr>
-                    <td><span class="badge bg-dark border border-secondary text-info me-1">${a.method}</span> <span class="text-white">${a.url}</span></td>
-                    <td class="text-end fw-semibold">${a.total}</td>
+                    <td><span class="badge bg-light text-dark border me-1">${a.method}</span> <span class="fw-semibold text-dark">${a.url}</span></td>
+                    <td class="text-end fw-semibold text-dark">${a.total}</td>
                     <td class="text-end text-muted">${a.avg_duration_ms} ms</td>
                     <td class="text-end"><span class="badge ${a.status === 'Operational' ? 'bg-success' : 'bg-warning text-dark'}">${a.status}</span></td>
                 </tr>
@@ -890,9 +836,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.performance.slow_pages && data.performance.slow_pages.length > 0) {
             slowTbody.innerHTML = data.performance.slow_pages.map(s => `
                 <tr>
-                    <td class="text-white">${s.url}</td>
+                    <td class="fw-semibold text-dark">${s.url}</td>
                     <td class="text-end text-muted">${s.requests}</td>
-                    <td class="text-end fw-semibold text-white">${s.avg_latency_ms} ms</td>
+                    <td class="text-end fw-semibold text-dark">${s.avg_latency_ms} ms</td>
                     <td class="text-end"><span class="vital-badge vital-${s.classification}">${s.classification.toUpperCase()}</span></td>
                 </tr>
             `).join('');
@@ -905,7 +851,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.alerts && data.alerts.length > 0) {
             alertsDiv.style.display = 'block';
             alertsDiv.innerHTML = data.alerts.map(al => `
-                <div class="alert ${al.severity === 'critical' ? 'alert-danger' : 'alert-warning'} d-flex align-items-center justify-content-between p-3 rounded-3 mb-2 shadow-sm">
+                <div class="alert ${al.severity === 'critical' ? 'alert-danger' : 'alert-warning'} d-flex align-items-center justify-content-between p-3 rounded-3 mb-2 shadow-sm border">
                     <div>
                         <strong><i class="bi bi-exclamation-triangle-fill me-1"></i> ${al.title}</strong>: ${al.message}
                         <div class="small text-muted mt-1">Affected: <strong>${al.affected_service || 'System'}</strong> &bull; Value: <strong>${al.actual_value}</strong></div>
@@ -933,11 +879,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isPaused) {
             pauseIcon.className = 'bi bi-play-fill me-1';
             pauseBtnText.textContent = 'Resume';
-            this.classList.replace('btn-outline-light', 'btn-warning');
+            this.classList.replace('btn-outline-secondary', 'btn-warning');
         } else {
             pauseIcon.className = 'bi bi-pause-fill me-1';
             pauseBtnText.textContent = 'Pause';
-            this.classList.replace('btn-warning', 'btn-outline-light');
+            this.classList.replace('btn-warning', 'btn-outline-secondary');
             fetchData();
         }
     });
