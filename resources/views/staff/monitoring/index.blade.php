@@ -647,6 +647,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Dynamic Chart Theme Adaptation
+    function applyChartTheme(isDark) {
+        trafficChart.options.scales.x.grid.color = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)';
+        trafficChart.options.scales.y.grid.color = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)';
+        trafficChart.options.scales.x.ticks.color = isDark ? '#94a3b8' : '#64748b';
+        trafficChart.options.scales.y.ticks.color = isDark ? '#94a3b8' : '#64748b';
+        trafficChart.update('none');
+    }
+
+    window.addEventListener('themeChanged', function(e) {
+        applyChartTheme(e.detail.theme === 'dark');
+    });
+
+    if (document.documentElement.getAttribute('data-bs-theme') === 'dark') {
+        applyChartTheme(true);
+    }
+
     // Connection Status Elements
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('connectionStatusText');

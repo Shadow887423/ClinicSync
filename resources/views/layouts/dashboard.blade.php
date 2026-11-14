@@ -18,6 +18,18 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
+    <!-- Theme Initialization Script (Prevents FOUC) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('clinicsync_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            }
+        })();
+    </script>
+
     <style>
         :root {
             --primary-navy: #0f2744;
@@ -195,6 +207,123 @@
             color: #ffffff;
         }
 
+        /* Dark Mode Theme Overrides */
+        [data-bs-theme="dark"] {
+            --bg-canvas: #0b1320;
+        }
+
+        [data-bs-theme="dark"] body {
+            background-color: #0b1320 !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-bs-theme="dark"] #top-header {
+            background: #0f1c2e !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        [data-bs-theme="dark"] #top-header .text-dark {
+            color: #f1f5f9 !important;
+        }
+
+        [data-bs-theme="dark"] .card-custom,
+        [data-bs-theme="dark"] .stat-card,
+        [data-bs-theme="dark"] .control-toolbar {
+            background: #111e33 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-bs-theme="dark"] .stat-card:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        [data-bs-theme="dark"] .stat-card .text-dark,
+        [data-bs-theme="dark"] .card-custom .text-dark {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .stat-card .text-muted,
+        [data-bs-theme="dark"] .card-custom .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        [data-bs-theme="dark"] .bg-light {
+            background-color: #0c1728 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-bs-theme="dark"] .table {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .table-light,
+        [data-bs-theme="dark"] thead.table-light tr,
+        [data-bs-theme="dark"] thead.table-light th {
+            background-color: #0c1728 !important;
+            color: #94a3b8 !important;
+            border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        [data-bs-theme="dark"] .table-hover tbody tr:hover td {
+            background-color: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        [data-bs-theme="dark"] .modal-content {
+            background-color: #111e33 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #f1f5f9 !important;
+        }
+
+        [data-bs-theme="dark"] .modal-content .text-dark {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .modal-header,
+        [data-bs-theme="dark"] .modal-footer {
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select {
+            background-color: #091322 !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .form-control:focus,
+        [data-bs-theme="dark"] .form-select:focus {
+            border-color: var(--secondary-teal) !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-menu {
+            background-color: #111e33 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] .badge.bg-light {
+            background-color: #1e293b !important;
+            color: #cbd5e1 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        [data-bs-theme="dark"] .btn-light {
+            background-color: #1e293b !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #cbd5e1 !important;
+        }
+
         /* Responsive Mobile Behavior */
         @media (max-width: 991.98px) {
             #sidebar {
@@ -370,6 +499,12 @@
                 <span id="liveClock">{{ now()->format('l, F d, Y') }}</span>
             </div>
 
+            <!-- Dark Mode Toggle Button -->
+            <button class="btn btn-sm btn-light border rounded-pill px-2 py-1 d-flex align-items-center gap-1 shadow-sm" id="themeToggleBtn" type="button" title="Toggle Dark/Light Mode">
+                <i class="bi bi-moon-stars-fill text-secondary" id="themeIcon"></i>
+                <span class="small fw-semibold d-none d-sm-inline" id="themeBtnText">Dark</span>
+            </button>
+
             <div class="dropdown">
                 <button class="btn btn-sm btn-light border dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
                     <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.75rem; background-color: var(--primary-navy) !important;">
@@ -384,6 +519,13 @@
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ route('settings') }}"><i class="bi bi-key me-2"></i> Change Password</a></li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center justify-content-between" type="button" id="themeToggleDropdown">
+                            <span><i class="bi bi-moon-stars me-2"></i> Dark Mode</span>
+                            <span class="badge bg-secondary" id="themeDropdownBadge">Off</span>
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
                     <li>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
@@ -443,6 +585,44 @@
         document.getElementById('sidebarToggle')?.addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('show');
         });
+
+        // Global Dark Mode Controller
+        (function() {
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const themeToggleDropdown = document.getElementById('themeToggleDropdown');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeBtnText = document.getElementById('themeBtnText');
+            const themeDropdownBadge = document.getElementById('themeDropdownBadge');
+
+            function updateThemeUI(theme) {
+                const isDark = theme === 'dark';
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                if (themeIcon) {
+                    themeIcon.className = isDark ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-secondary';
+                }
+                if (themeBtnText) {
+                    themeBtnText.textContent = isDark ? 'Light' : 'Dark';
+                }
+                if (themeDropdownBadge) {
+                    themeDropdownBadge.textContent = isDark ? 'On' : 'Off';
+                    themeDropdownBadge.className = isDark ? 'badge bg-teal' : 'badge bg-secondary';
+                }
+                window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: theme } }));
+            }
+
+            function toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('clinicsync_theme', newTheme);
+                updateThemeUI(newTheme);
+            }
+
+            themeToggleBtn?.addEventListener('click', toggleTheme);
+            themeToggleDropdown?.addEventListener('click', toggleTheme);
+
+            const initialTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            updateThemeUI(initialTheme);
+        })();
     </script>
     @include('partials.performance-observer')
     @yield('scripts')
