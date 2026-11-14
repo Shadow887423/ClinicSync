@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, Auditable;
 
     const ROLE_PATIENT = 'patient';
     const ROLE_STAFF = 'staff';
@@ -24,6 +26,7 @@ class User extends Authenticatable
         'birth_date',
         'gender',
         'password',
+        'deletion_reason',
     ];
 
     protected $attributes = [

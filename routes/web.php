@@ -6,6 +6,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\Staff\MonitoringController;
+use App\Http\Controllers\Staff\AuditController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -108,6 +109,17 @@ Route::middleware('auth')->group(function () {
                 Route::post('/alerts/{alert}/resolve', [MonitoringController::class, 'resolveAlert'])->name('alerts.resolve');
                 Route::post('/settings', [MonitoringController::class, 'updateSettings'])->name('settings.update');
                 Route::get('/export', [MonitoringController::class, 'export'])->name('export');
+            });
+
+            // Section 18: Record-Level Audit History & Lifecycle Tracking
+            Route::prefix('audit')->name('audit.')->group(function () {
+                Route::get('/', [AuditController::class, 'index'])->name('index');
+                Route::get('/record/{type}/{id}', [AuditController::class, 'recordHistory'])->name('record');
+                Route::get('/compare/{auditLog}', [AuditController::class, 'compare'])->name('compare');
+                Route::get('/deleted', [AuditController::class, 'deletedRecords'])->name('deleted');
+                Route::post('/restore/{type}/{id}', [AuditController::class, 'restore'])->name('restore');
+                Route::delete('/delete/{type}/{id}', [AuditController::class, 'deleteRecord'])->name('delete');
+                Route::get('/export', [AuditController::class, 'export'])->name('export');
             });
         });
     });

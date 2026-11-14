@@ -444,6 +444,17 @@
                         <i class="bi bi-broadcast"></i> SMS Gateway Settings
                     </a>
                 </li>
+                <li class="sidebar-header">Audit & Governance</li>
+                <li>
+                    <a href="{{ route('staff.audit.index') }}" class="sidebar-link {{ request()->routeIs('staff.audit.index') || request()->routeIs('staff.audit.record') ? 'active' : '' }}">
+                        <i class="bi bi-shield-check text-primary"></i> Audit Trail & History
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('staff.audit.deleted') }}" class="sidebar-link {{ request()->routeIs('staff.audit.deleted') ? 'active' : '' }}">
+                        <i class="bi bi-trash3 text-danger"></i> Deleted Records (Trash)
+                    </a>
+                </li>
                 @endif
             @endif
 

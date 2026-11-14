@@ -152,28 +152,45 @@
             </div>
         </div>
 
-        <!-- Activity Audit Log -->
-        <div class="card card-custom p-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-primary me-2"></i> Audit Trail & Activity Logs</h5>
-            <div class="timeline position-relative ps-4 border-start border-2 border-primary" style="margin-left: 10px;">
-                @forelse($appointment->activityLogs as $log)
-                    <div class="mb-4 position-relative">
-                        <div class="position-absolute rounded-circle bg-primary" style="width: 12px; height: 12px; left: -23px; top: 4px;"></div>
-                        <div class="fw-bold small text-dark mb-0">
-                            {{ ucfirst(str_replace('_', ' ', $log->action)) }}
-                            @if($log->new_status)
-                                <span class="badge bg-light text-dark border ms-1">{{ ucfirst($log->new_status) }}</span>
-                            @endif
-                        </div>
-                        <p class="text-muted small mb-1">{{ $log->details }}</p>
-                        <div class="text-muted" style="font-size: 0.72rem;">
-                            {{ $log->created_at->format('M d, Y \a\t g:i A') }} by {{ $log->user ? $log->user->name : 'System' }}
-                        </div>
-                    </div>
-                @empty
-                    <p class="text-muted small mb-0">No activity logged.</p>
-                @endforelse
+        <!-- Activity History & Complete Record Lifecycle -->
+        <div class="card card-custom p-4 mb-4 border shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div>
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-clock-history text-primary me-2"></i> Activity History & Record Lifecycle
+                    </h5>
+                    <span class="text-muted small">Chronological audit trail documenting creation, field changes, triage, and status transitions</span>
+                </div>
+                @if(Auth::user()->isAdmin())
+                    <a href="{{ route('staff.audit.record', ['type' => 'appointment', 'id' => $appointment->id]) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        <i class="bi bi-shield-check me-1"></i> Full Lifecycle View
+                    </a>
+                @endif
             </div>
+
+            @if($appointment->auditLogs->isNotEmpty())
+                @include('partials.audit-timeline', ['timeline' => $appointment->auditLogs])
+            @else
+                <div class="timeline position-relative ps-4 border-start border-2 border-primary" style="margin-left: 10px;">
+                    @forelse($appointment->activityLogs as $log)
+                        <div class="mb-4 position-relative">
+                            <div class="position-absolute rounded-circle bg-primary" style="width: 12px; height: 12px; left: -23px; top: 4px;"></div>
+                            <div class="fw-bold small text-dark mb-0">
+                                {{ ucfirst(str_replace('_', ' ', $log->action)) }}
+                                @if($log->new_status)
+                                    <span class="badge bg-light text-dark border ms-1">{{ ucfirst($log->new_status) }}</span>
+                                @endif
+                            </div>
+                            <p class="text-muted small mb-1">{{ $log->details }}</p>
+                            <div class="text-muted" style="font-size: 0.72rem;">
+                                {{ $log->created_at->format('M d, Y \a\t g:i A') }} by {{ $log->user ? $log->user->name : 'System' }}
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-muted small mb-0">No activity logged.</p>
+                    @endforelse
+                </div>
+            @endif
         </div>
     </div>
 

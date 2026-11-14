@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
 class Appointment extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, Auditable;
 
     const STATUS_PENDING = 'pending';
     const STATUS_CONFIRMED = 'confirmed';
@@ -34,6 +36,7 @@ class Appointment extends Model
         'rejection_reason',
         'cancellation_reason',
         'reschedule_reason',
+        'deletion_reason',
         'reminder_sent_at',
     ];
 

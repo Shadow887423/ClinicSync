@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 class Dentist extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, Auditable;
 
     protected $fillable = [
         'user_id',
@@ -20,6 +22,7 @@ class Dentist extends Model
         'slot_duration_minutes',
         'status',
         'bio',
+        'deletion_reason',
     ];
 
     public function user()
