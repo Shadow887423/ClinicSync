@@ -98,6 +98,8 @@ Route::middleware('auth')->group(function () {
             Route::put('/dentists/{dentist}', [StaffController::class, 'updateDentist'])->name('dentists.update');
             Route::post('/dentists/{dentist}/availability', [StaffController::class, 'updateAvailability'])->name('dentists.availability');
             Route::get('/settings', [StaffController::class, 'settings'])->name('settings');
+            Route::post('/settings/security', [StaffController::class, 'updateSecuritySettings'])->name('settings.security.update');
+            Route::post('/settings/toggle-inspection-mode', [StaffController::class, 'toggleInspectionMode'])->name('settings.toggle-inspection-mode');
             Route::post('/test-sms', [StaffController::class, 'testSms'])->middleware('throttle:5,1')->name('test-sms');
 
             // Advanced Real-Time Monitoring & NOC System

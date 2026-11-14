@@ -425,6 +425,7 @@ class StaffController extends Controller
         $gateway = config('sms.provider', 'simulated');
         $isSimulation = config('sms.simulation_enabled', true);
         $reminderHours = config('sms.reminder_hours_before', 24);
+        $securityConfig = app(\App\Services\SecurityProtectionService::class)->getSettings();
 
         $stats = [
             'total_sent' => SmsNotification::whereIn('status', ['sent', 'delivered', 'simulated'])->count(),
@@ -432,7 +433,30 @@ class StaffController extends Controller
             'total_simulated' => SmsNotification::where('status', 'simulated')->count(),
         ];
 
-        return view('staff.settings', compact('gateway', 'isSimulation', 'reminderHours', 'stats'));
+        return view('staff.settings', compact('gateway', 'isSimulation', 'reminderHours', 'stats', 'securityConfig'));
+    }
+
+    public function updateSecuritySettings(Request $request)
+    {
+        app(\App\Services\SecurityProtectionService::class)->updateSettings([
+            'enabled' => $request->boolean('enabled'),
+            'disable_context_menu' => $request->boolean('disable_context_menu'),
+            'block_shortcuts' => $request->boolean('block_shortcuts'),
+            'detect_devtools' => $request->boolean('detect_devtools'),
+            'show_warning' => $request->boolean('show_warning'),
+            'allow_admin_bypass' => $request->boolean('allow_admin_bypass'),
+        ]);
+
+        return back()->with('success', 'Website inspection deterrence and frontend protection settings updated successfully.');
+    }
+
+    public function toggleInspectionMode()
+    {
+        $current = session('admin_inspection_mode', false);
+        session(['admin_inspection_mode' => !$current]);
+
+        $status = !$current ? 'activated (deterrence bypassed for your current session)' : 'deactivated (standard protection active)';
+        return back()->with('info', "Administrator inspection debug mode {$status}.");
     }
 
     public function testSms(Request $request)

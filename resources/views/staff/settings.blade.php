@@ -288,6 +288,142 @@
         </div>
     </div>
 </div>
+
+<!-- Section: Website Inspection Deterrence & Frontend Protection -->
+<div class="row g-4 mt-1">
+    <div class="col-12">
+        <div class="card card-custom p-4 border shadow-sm">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">
+                            <i class="bi bi-shield-lock-fill me-1"></i> Behavioral Protection Layer
+                        </span>
+                        @if($securityConfig['enabled'])
+                            <span class="badge bg-success">Active Protection</span>
+                        @else
+                            <span class="badge bg-secondary">Deterrence Disabled</span>
+                        @endif
+                        @if(session('admin_inspection_mode', false))
+                            <span class="badge bg-warning text-dark">Admin Debug Mode Active</span>
+                        @endif
+                    </div>
+                    <h5 class="fw-bold text-dark mb-0">Website Inspection Deterrence & Frontend Protection</h5>
+                    <p class="text-muted small mb-0 mt-1">
+                        Discourages casual users from accessing browser developer inspection tools while safeguarding normal navigation, accessibility, and form inputs.
+                    </p>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <form action="{{ route('staff.settings.toggle-inspection-mode') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-sm {{ session('admin_inspection_mode', false) ? 'btn-warning text-dark' : 'btn-outline-secondary' }} rounded-pill px-3">
+                            <i class="bi bi-bug me-1"></i>
+                            {{ session('admin_inspection_mode', false) ? 'Disable Admin Inspection Mode' : 'Enable Admin Inspection Mode' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informational Security Notice -->
+            <div class="alert alert-info py-2 px-3 small mb-4 border-start border-4 border-info">
+                <div class="fw-bold"><i class="bi bi-info-circle-fill me-1"></i> Defense-in-Depth Principle:</div>
+                <div class="opacity-90">
+                    Browser developer tools cannot be completely disabled by any website because clients retain full execution authority in their own browsers. These controls act as behavioral deterrents against casual tampering. True clinical and authentication security is strictly enforced on the server-side via authorization middleware, rate limiting, CSRF verification, and database encryption.
+                </div>
+            </div>
+
+            <form action="{{ route('staff.settings.security.update') }}" method="POST">
+                @csrf
+                <div class="row g-4">
+                    <!-- Master Switch -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="enabled" id="sec_enabled" value="1" {{ $securityConfig['enabled'] ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold text-dark" for="sec_enabled">Master Deterrence Layer</label>
+                            </div>
+                            <div class="text-muted small">
+                                Enables or disables all client-side inspection deterrence mechanisms globally across the application.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Click Context Menu -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="disable_context_menu" id="sec_context_menu" value="1" {{ $securityConfig['disable_context_menu'] ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold text-dark" for="sec_context_menu">Restrict Right-Click Menu</label>
+                            </div>
+                            <div class="text-muted small">
+                                Blocks the right-click context menu on page canvases while strictly preserving right-click copy/paste inside form input fields.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Block Shortcuts -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="block_shortcuts" id="sec_shortcuts" value="1" {{ $securityConfig['block_shortcuts'] ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold text-dark" for="sec_shortcuts">Block DevTools Shortcuts</label>
+                            </div>
+                            <div class="text-muted small">
+                                Traps and cancels F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, and Ctrl+U without interfering with standard navigation or Ctrl+C / Ctrl+V.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DevTools Detection -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="detect_devtools" id="sec_detect" value="1" {{ $securityConfig['detect_devtools'] ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold text-dark" for="sec_detect">Lightweight DevTools Detection</label>
+                            </div>
+                            <div class="text-muted small">
+                                Detects open developer tools via debounced resize thresholds. Avoids aggressive loops, freezes, or forced redirects.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning Toast -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="show_warning" id="sec_warning" value="1" {{ $securityConfig['show_warning'] ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold text-dark" for="sec_warning">Security Warning Notice</label>
+                            </div>
+                            <div class="text-muted small">
+                                Displays a non-intrusive floating security banner when inspection attempts occur, informing the user that access is audited.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Bypass -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="allow_admin_bypass" id="sec_admin_bypass" value="1" {{ $securityConfig['allow_admin_bypass'] ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold text-dark" for="sec_admin_bypass">Administrator Bypass Option</label>
+                            </div>
+                            <div class="text-muted small">
+                                Allows authenticated administrators to bypass deterrence restrictions using the inspection mode switch above.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end">
+                    <button type="submit" class="btn btn-teal rounded-pill px-4 fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i> Save Security Deterrence Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')

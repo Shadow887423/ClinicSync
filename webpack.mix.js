@@ -15,3 +15,12 @@ mix.js('resources/js/app.js', 'public/js')
     .postCss('resources/css/app.css', 'public/css', [
         //
     ]);
+
+// Production Frontend Protection & Minification Settings
+mix.options({
+    productionSourceMaps: false,
+});
+
+if (mix.inProduction()) {
+    mix.version();
+}

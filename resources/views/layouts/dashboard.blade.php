@@ -635,6 +635,7 @@
             updateThemeUI(initialTheme);
         })();
     </script>
+    @include('partials.inspection-deterrence')
     @include('partials.performance-observer')
     @yield('scripts')
 </body>
